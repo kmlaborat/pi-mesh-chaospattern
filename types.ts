@@ -153,6 +153,16 @@ export interface MeshState {
 export interface HookActions {
   /** Rename this agent in the mesh. Handles watcher cycling and registry update. */
   rename(newName: string): Promise<RenameResult>;
+
+  /**
+   * Send a custom message to the session (injected into LLM context).
+   * Wraps ExtensionAPI.sendMessage — hooks don't have direct access to the
+   * extension API, so this provides a safe bridge.
+   */
+  sendMessage<T = unknown>(
+    message: { customType: string; content: string; display?: string | false; details?: T },
+    options?: { triggerTurn?: boolean; deliverAs?: "steer" | "followUp" | "nextTurn" },
+  ): void;
 }
 
 /**
@@ -166,7 +176,7 @@ export interface MeshLifecycleHooks {
   onRegistered?(state: MeshState, ctx: ExtensionContext, actions: HookActions): void | Promise<void>;
 
   /** Called after a successful rename via mesh_manage or programmatic rename. */
-  onRenamed?(state: MeshState, ctx: ExtensionContext, result: RenameResult): void | Promise<void>;
+  onRenamed?(state: MeshState, ctx: ExtensionContext, result: RenameResult, actions: HookActions): void | Promise<void>;
 
   /** Called on a configurable interval while registered. */
   onPollTick?(state: MeshState, ctx: ExtensionContext, actions: HookActions): void | Promise<void>;

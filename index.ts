@@ -122,18 +122,22 @@ export default function piMeshExtension(pi: ExtensionAPI) {
   }
 
   function buildHookActions(ctx: ExtensionContext): import("./types.js").HookActions {
-    return {
+    const actions: import("./types.js").HookActions = {
       async rename(newName: string) {
         messaging.stopWatcher(state);
         const renameResult = registry.renameAgent(state, dirs, ctx, newName);
         messaging.startWatcher(state, dirs, deliverMessage);
         updateStatusBar(ctx);
         if (renameResult.success) {
-          await hooks.onRenamed?.(state, ctx, renameResult);
+          await hooks.onRenamed?.(state, ctx, renameResult, actions);
         }
         return renameResult;
       },
+      sendMessage(message: any, options: any) {
+        pi.sendMessage(message, options);
+      },
     };
+    return actions;
   }
 
   async function startHooksPollTimer(ctx: ExtensionContext): Promise<void> {
@@ -565,7 +569,7 @@ export default function piMeshExtension(pi: ExtensionAPI) {
       return result(`Error: ${renameResult.error}`);
     }
 
-    await hooks.onRenamed?.(state, ctx, renameResult);
+    await hooks.onRenamed?.(state, ctx, renameResult, buildHookActions(ctx));
 
     return result(
       `Renamed from "${renameResult.oldName}" to "${renameResult.newName}".`
