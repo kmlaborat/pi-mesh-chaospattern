@@ -6,7 +6,7 @@
  */
 
 import type { ExtensionAPI, ExtensionContext } from "@mariozechner/pi-coding-agent";
-import { truncateToWidth } from "@mariozechner/pi-tui";
+import { truncateToWidth, wrapTextWithAnsi } from "@mariozechner/pi-tui";
 import { Type } from "@sinclair/typebox";
 import { isAbsolute, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -656,7 +656,7 @@ export default function piMeshExtension(pi: ExtensionAPI) {
         result.push(header + urgentTag);
         result.push("");
         for (const line of (details.text ?? "").split("\n")) {
-          result.push(truncateToWidth(line, width));
+          result.push(...wrapTextWithAnsi(line, width));
         }
         return result;
       },

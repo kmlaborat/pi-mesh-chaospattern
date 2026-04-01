@@ -1,49 +1,60 @@
 import { describe, expect, test } from "bun:test";
 
 /**
- * Standalone replica of the message renderer truncation logic from index.ts (~line 579):
- *   line.length > width ? line.slice(0, width - 3) + "..." : line
+ * Standalone replica of the message renderer wrapping logic from index.ts.
  *
- * We replicate it here because the renderer is defined inside the extension
- * factory and cannot be imported directly.
+ * The renderer now uses wrapTextWithAnsi from pi-tui to word-wrap long lines
+ * instead of truncating them with "...". We replicate a simplified version
+ * here since the renderer is defined inside the extension factory.
  */
-function truncateLine(line: string, width: number): string {
-  return line.length > width ? line.slice(0, width - 3) + "..." : line;
+function wrapLine(line: string, width: number): string[] {
+  if (!line || line.length <= width) return [line || ""];
+  const result: string[] = [];
+  let remaining = line;
+  while (remaining.length > width) {
+    // Try to break at last space within width
+    let breakAt = remaining.lastIndexOf(" ", width);
+    if (breakAt <= 0) breakAt = width; // no space found, hard break
+    result.push(remaining.slice(0, breakAt));
+    remaining = remaining.slice(breakAt).trimStart();
+  }
+  if (remaining) result.push(remaining);
+  return result;
 }
 
-describe("renderer truncation logic", () => {
-  test("line shorter than width is unchanged", () => {
-    const line = "hello";
-    const result = truncateLine(line, 20);
-    expect(result).toBe("hello");
-    expect(result.length).toBe(5);
+describe("renderer wrapping logic", () => {
+  test("line shorter than width returns single element", () => {
+    const result = wrapLine("hello", 20);
+    expect(result).toEqual(["hello"]);
   });
 
-  test("line equal to width is unchanged", () => {
+  test("line equal to width returns single element", () => {
     const line = "abcdefghij"; // 10 chars
-    const result = truncateLine(line, 10);
-    expect(result).toBe("abcdefghij");
-    expect(result.length).toBe(10);
+    const result = wrapLine(line, 10);
+    expect(result).toEqual(["abcdefghij"]);
   });
 
-  test("line longer than width is truncated to exactly width chars", () => {
+  test("long line is wrapped into multiple lines", () => {
+    const line = "the quick brown fox jumps over the lazy dog";
+    const result = wrapLine(line, 20);
+    // Each wrapped line should be <= 20 chars
+    for (const l of result) {
+      expect(l.length).toBeLessThanOrEqual(20);
+    }
+    // All content is preserved (join and compare)
+    expect(result.join(" ")).toBe(line);
+  });
+
+  test("long line without spaces hard-breaks at width", () => {
     const line = "abcdefghijklmnop"; // 16 chars
-    const width = 10;
-    const result = truncateLine(line, width);
-    // slice(0, 10-3) + "..." = "abcdefg" + "..." = "abcdefg..."
-    expect(result).toBe("abcdefg...");
-    expect(result.length).toBe(width);
+    const result = wrapLine(line, 10);
+    expect(result.length).toBeGreaterThan(1);
+    expect(result[0].length).toBeLessThanOrEqual(10);
+    expect(result.join("")).toBe(line);
   });
 
-  test("empty line stays empty", () => {
-    const result = truncateLine("", 20);
-    expect(result).toBe("");
-  });
-
-  test("width=3 edge case produces just '...'", () => {
-    // A line longer than 3: slice(0, 0) + "..." = "..."
-    const result = truncateLine("abcdef", 3);
-    expect(result).toBe("...");
-    expect(result.length).toBe(3);
+  test("empty line returns single empty string", () => {
+    const result = wrapLine("", 20);
+    expect(result).toEqual([""]);
   });
 });
