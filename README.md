@@ -224,11 +224,31 @@ Hooks receive `MeshState` which includes an optional `hookState: Record<string, 
 
 Full docs at [rhnvrm.github.io/pi-mesh](https://rhnvrm.github.io/pi-mesh/).
 
+## Skills
+
+This project includes a project-local skill for enhanced agent coordination:
+
+### mesh-coordination Skill
+
+Defines rules, roles, and workflows for multi-agent coordination:
+
+- **Roles**: 
+  - **Builder**: Implements code and writes tests
+  - **Validator**: Reviews code, detects bugs, approves for merge
+  - **Coordinator**: Manages progress and coordinates with others
+- **Rules**: Plan sharing via `mesh_send`, @mentions, progress updates, code review by Validator
+- **Workflow**: Plan → Implement → Validator Review → Fixes → Approval → Merge
+- **Code Review**: Validator performs code review using `read` tool (no external dependencies)
+
+See `skills/mesh-coordination/SKILL.md` for details.
+
 ## Credits
 
 **Original pi-mesh:** Created by [Rohan Verma](https://github.com/rhnvrm). Inspired by [pi-messenger](https://github.com/nicobailon/pi-messenger) by Nico Bailon.
 
 **Chaos Pattern fork:** Added by [kmlaborat](https://github.com/kmlaborat). Based on the [agents-chatter](https://github.com/RAG4J/agents-chatter) project by Jettro Coenradie.
+
+**Multi-agent coordination skills:** Designed for agent-to-agent conversation facilitation.
 
 pi-mesh focuses on coordination only - presence, messaging, reservations - without the crew/task layer.
 

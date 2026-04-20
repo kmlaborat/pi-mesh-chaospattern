@@ -3,17 +3,17 @@
     "builder": {
       "description": "Implements code and writes tests.",
       "allowed_tools": ["edit", "write", "bash", "mesh_reserve"],
-      "must_do": ["mesh_send before edit", "write tests"]
+      "must_do": ["mesh_send before edit", "write tests", "report completion with SHA"]
     },
     "validator": {
       "description": "Reviews code and detects bugs.",
       "allowed_tools": ["read", "bash", "mesh_send"],
-      "must_do": ["review code before merge", "provide feedback"]
+      "must_do": ["review code before merge", "provide structured feedback", "approve/reject based on review"]
     },
     "coordinator": {
       "description": "Manages progress and coordinates with others.",
       "allowed_tools": ["mesh_send", "mesh_peers", "mesh_manage"],
-      "must_do": ["track progress", "resolve conflicts"]
+      "must_do": ["track progress", "resolve conflicts", "assign roles"]
     }
   },
   "current_agents": {
