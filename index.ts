@@ -69,7 +69,7 @@ export default function piMeshExtension(pi: ExtensionAPI) {
         text: msg.text,
         timestamp: new Date(msg.timestamp).getTime(),
         depth: msg.replyTo ? 2 : 1,
-        replyTo: msg.from,
+        replyTo: msg.replyTo ?? "",
       });
 
       if (!result.allowed) {
