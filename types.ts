@@ -18,6 +18,7 @@ export interface MeshConfig {
   stuckThreshold: number;
   autoStatus: boolean;
   hooksModule?: string;
+  chaosMode: "strict" | "relaxed" | "off";
 }
 
 // =============================================================================
@@ -85,7 +86,8 @@ export type FeedEventType =
   | "commit"
   | "test"
   | "edit"
-  | "stuck";
+  | "stuck"
+  | "moderated";
 
 export interface FeedEvent {
   ts: string;

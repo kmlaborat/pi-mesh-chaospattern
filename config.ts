@@ -19,8 +19,8 @@ const DEFAULT_CONFIG: MeshConfig = {
   contextMode: "full",
   feedRetention: 50,
   stuckThreshold: 900,
-
   autoStatus: true,
+  chaosMode: "strict",
 };
 
 function readJsonFile(path: string): Record<string, unknown> | null {
@@ -116,6 +116,7 @@ export function loadConfig(cwd: string): MeshConfig {
     stuckThreshold: typeof merged.stuckThreshold === "number" ? merged.stuckThreshold : DEFAULT_CONFIG.stuckThreshold,
     autoStatus: merged.autoStatus !== false,
     hooksModule: typeof merged.hooksModule === "string" ? merged.hooksModule : undefined,
+    chaosMode: (merged.chaosMode as "strict" | "relaxed" | "off") ?? "strict",
   };
 }
 

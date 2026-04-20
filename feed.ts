@@ -91,6 +91,7 @@ export function formatEvent(event: FeedEvent): string {
     case "test": line += ` ran tests (${event.preview ?? ""})`; break;
     case "edit": line += ` editing ${event.target ?? ""}`; break;
     case "stuck": line += " appears stuck"; break;
+    case "moderated": line += ` blocked by ${event.target ?? "moderator"}: ${event.preview ?? ""}`; break;
     default: line += ` ${event.type}`; break;
   }
   return line;

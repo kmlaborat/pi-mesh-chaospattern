@@ -18,6 +18,7 @@ import * as reservations from "./reservations.js";
 import * as messaging from "./messaging.js";
 import * as feed from "./feed.js";
 import * as tracking from "./tracking.js";
+import { ModerationService } from "./chaos-moderator/moderation.js";
 
 export default function piMeshExtension(pi: ExtensionAPI) {
   // ===========================================================================
@@ -53,12 +54,36 @@ export default function piMeshExtension(pi: ExtensionAPI) {
   let dirs: Dirs = registry.resolveDirs(process.cwd());
   let hooks: MeshLifecycleHooks = {};
   let hooksPollTimer: ReturnType<typeof setInterval> | null = null;
+  let moderator: ModerationService | null = null;
 
   // ===========================================================================
   // Message Delivery
   // ===========================================================================
 
   function deliverMessage(msg: MeshMessage): void {
+    // Moderation check (if enabled)
+    if (moderator && config.chaosMode !== "off") {
+      const result = moderator.evaluate({
+        from: msg.from,
+        to: msg.to || "all",
+        text: msg.text,
+        timestamp: new Date(msg.timestamp).getTime(),
+        depth: msg.replyTo ? 2 : 1,
+        replyTo: msg.from,
+      });
+
+      if (!result.allowed) {
+        feed.logEvent(
+          dirs,
+          msg.from,
+          "moderated",
+          msg.to || "all",
+          `${result.decisions[0].rule}: ${result.decisions[0].reason}`
+        );
+        return; // Block delivery
+      }
+    }
+
     const replyHint =
       config.contextMode !== "none"
         ? ` - reply: mesh_send({ to: "${msg.from}", message: "..." })`
@@ -699,6 +724,17 @@ export default function piMeshExtension(pi: ExtensionAPI) {
       await hooks.onRegistered?.(state, ctx, buildHookActions(ctx));
       await startHooksPollTimer(ctx);
 
+      // Initialize ModerationService if chaos mode is enabled
+      if (config.chaosMode !== "off") {
+        moderator = new ModerationService({
+          cooldownMs: 2000,
+          duplicateWindowSize: 10,
+          duplicateThreshold: 0.8,
+          loopWindowSize: 5,
+          maxDepth: 2,
+        });
+      }
+
       // Inject context message so the LLM knows its mesh identity
       if (config.contextMode !== "none") {
         const folder = registry.extractFolder(process.cwd());
@@ -838,6 +874,9 @@ export default function piMeshExtension(pi: ExtensionAPI) {
     // Lifecycle hook shutdown — wrapped so exceptions don't skip cleanup.
     try { hooks.onShutdown?.(state); } catch { /* ignore */ }
     stopHooksPollTimer();
+
+    // Cleanup moderators
+    moderator = null;
 
     // Cleanup timers
     if (state.registryFlushTimer) {
