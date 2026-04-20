@@ -1,9 +1,10 @@
-# pi-mesh
+# pi-mesh-chaospattern
 
-<a href="https://zerodha.tech"><img src="https://zerodha.tech/static/images/github-badge.svg" alt="Zerodha Tech"></a>
-<a href="https://www.npmjs.com/package/pi-mesh"><img src="https://img.shields.io/npm/v/pi-mesh" alt="npm"></a>
+> **Fork of [pi-mesh](https://github.com/rhnvrm/pi-mesh) with Chaos Pattern moderation**
 
 Coordinate multiple [Pi](https://github.com/badlogic/pi-mono) agents working in the same project. See who's around, claim files so you don't step on each other, and send messages between sessions.
+
+**New feature:** **Chaos Pattern** - Autonomous agent-to-agent communication with built-in moderation to prevent runaway conversations.
 
 No daemon, no server. Just files on disk.
 
@@ -19,7 +20,8 @@ Add `.pi/pi-mesh.json` to your project:
 
 ```json
 {
-  "autoRegister": true
+  "autoRegister": true,
+  "chaosMode": "strict"
 }
 ```
 
@@ -27,7 +29,7 @@ That's it. Start two Pi sessions in the same project and they'll find each other
 
 ## What you get
 
-**Five tools** for agents to coordinate:
+**Six tools** for agents to coordinate:
 
 | Tool | What it does |
 |------|-------------|
@@ -36,10 +38,26 @@ That's it. Start two Pi sessions in the same project and they'll find each other
 | `mesh_release` | Let go of files when you're done |
 | `mesh_send` | Message another agent. Normal messages wait politely; urgent ones interrupt |
 | `mesh_manage` | Rename yourself, set status, check agent details, view the activity feed |
+| `chaos-moderator` | **NEW:** Automatically moderate agent-to-agent messages |
 
 **An overlay** you open with `/mesh` - three tabs showing agents, activity feed, and a chat with `@mention` tab-completion.
 
 **Automatic tracking** of edits, commits, and test runs. Status is derived from activity ("just shipped", "debugging...", "on fire").
+
+### Chaos Pattern: Autonomous Agent Communication
+
+The **Chaos Pattern** enables agents to respond to each other's messages automatically, creating emergent collaborative conversations. To prevent runaway loops, it includes built-in moderation:
+
+- **Self-Reply Filter**: Agents never reply to themselves
+- **Cooldown**: 2-second minimum between agent posts
+- **Duplicate Detection**: Blocks messages >80% similar to recent ones
+- **Loop Suppression**: Detects repeated conversation patterns
+- **Depth Limit**: Max 2-level agent chains (human → agent1 → agent2 ✗)
+
+Configure via `chaosMode`:
+- `"strict"`: All rules enabled (default)
+- `"relaxed"`: Less aggressive filtering (coming soon)
+- `"off"`: Disable moderation (agents can chat freely)
 
 ## Quick example
 
@@ -58,6 +76,9 @@ mesh_send({ to: "zero-2", message: "Stop! Don't touch config.ts", urgent: true }
 
 // Done, release files
 mesh_release({})
+
+// Enable Chaos Pattern for autonomous agent conversations
+// Add to .pi/pi-mesh.json: { "chaosMode": "strict" }
 ```
 
 ## How it works
@@ -77,6 +98,8 @@ Messages use Pi's delivery system - normal messages queue until the recipient fi
 
 Reservations are enforced by hooking Pi's `edit` and `write` tools. When an agent tries to edit a reserved file, the tool call gets blocked and the agent sees who reserved it and why.
 
+**Chaos Pattern moderation** intercepts messages before delivery, applying rules in order: self-reply → cooldown → duplicate → loop → depth. Blocked messages are logged to the activity feed.
+
 Non-interactive sessions (`--print` mode, daemon tasks) skip registration entirely so they don't spam interactive agents.
 
 ## Overlay
@@ -86,7 +109,7 @@ Open with `/mesh`. Tab switches between panels, arrow keys scroll, Esc closes.
 | Tab | Shows |
 |-----|-------|
 | Agents | Live status of all peers - model, branch, current activity, reservations |
-| Feed | Scrollable timeline of joins, edits, commits, messages |
+| Feed | Scrollable timeline of joins, edits, commits, messages, **moderation events** |
 | Chat | Type `@name message` to DM, or just type to broadcast. Tab-complete names |
 
 ## Configuration
@@ -100,7 +123,8 @@ Full config with defaults:
   "contextMode": "full",
   "feedRetention": 50,
   "stuckThreshold": 900,
-  "autoStatus": true
+  "autoStatus": true,
+  "chaosMode": "strict"
 }
 ```
 
@@ -112,6 +136,7 @@ Full config with defaults:
 | feedRetention | Max events kept in the activity feed | 50 |
 | stuckThreshold | Seconds idle before an agent is marked stuck | 900 |
 | autoStatus | Generate status from activity automatically | true |
+| **chaosMode** | **Enable Chaos Pattern moderation: "strict", "relaxed", "off"** | **"strict"** |
 
 Config is loaded from: project `.pi/pi-mesh.json` > user `~/.pi/agent/pi-mesh.json` > `~/.pi/agent/settings.json` "mesh" key > defaults.
 
@@ -183,7 +208,11 @@ Full docs at [rhnvrm.github.io/pi-mesh](https://rhnvrm.github.io/pi-mesh/).
 
 ## Credits
 
-Inspired by [pi-messenger](https://github.com/nicobailon/pi-messenger) by Nico Bailon. pi-mesh focuses on coordination only - presence, messaging, reservations - without the crew/task layer.
+**Original pi-mesh:** Created by [Rohan Verma](https://github.com/rhnvrm). Inspired by [pi-messenger](https://github.com/nicobailon/pi-messenger) by Nico Bailon.
+
+**Chaos Pattern fork:** Added by [kmlaborat](https://github.com/kmlaborat). Based on the [agents-chatter](https://github.com/RAG4J/agents-chatter) project by Jettro Coenradie.
+
+pi-mesh focuses on coordination only - presence, messaging, reservations - without the crew/task layer.
 
 ## License
 
