@@ -6,3 +6,4 @@ dist/
 *.log
 coverage/
 docs/plans/
+docs/verification-report.md
