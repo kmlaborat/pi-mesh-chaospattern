@@ -1,0 +1,23 @@
+{
+  "roles": {
+    "builder": {
+      "description": "Implements code and writes tests.",
+      "allowed_tools": ["edit", "write", "bash", "mesh_reserve"],
+      "must_do": ["mesh_send before edit", "write tests"]
+    },
+    "validator": {
+      "description": "Reviews code and detects bugs.",
+      "allowed_tools": ["read", "bash", "mesh_send"],
+      "must_do": ["review code before merge", "provide feedback"]
+    },
+    "coordinator": {
+      "description": "Manages progress and coordinates with others.",
+      "allowed_tools": ["mesh_send", "mesh_peers", "mesh_manage"],
+      "must_do": ["track progress", "resolve conflicts"]
+    }
+  },
+  "current_agents": {
+    "agent-1": "builder",
+    "agent-2": "validator"
+  }
+}
