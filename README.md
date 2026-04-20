@@ -10,6 +10,24 @@ No daemon, no server. Just files on disk.
 
 ## Install
 
+### From GitHub (Recommended for this fork)
+
+```bash
+pi install github:kmlaborat/pi-mesh-chaospattern
+```
+
+You can also install a specific branch or tag:
+
+```bash
+# Specific branch
+pi install github:kmlaborat/pi-mesh-chaospattern#main
+
+# Specific tag
+pi install github:kmlaborat/pi-mesh-chaospattern#v1.0.0
+```
+
+### From npm (Original pi-mesh)
+
 ```bash
 pi install npm:pi-mesh
 ```
