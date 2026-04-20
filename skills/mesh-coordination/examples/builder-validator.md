@@ -16,10 +16,13 @@
 **Builder**: "@validator Bug fix complete. SHA: jkl012. Tests added."
 **Validator**: "[reads code] @builder Strengths: Null check correct, comprehensive tests. Issues: None. Decision: Approve. Ready to merge."
 
-## Example 3: Role Assignment
+## Example 3: Role Assignment (with proper reply flow)
 **Coordinator**: "@builder @validator Confirming Block class implementation. Builder: implement, Validator: review. Any issues?"
-**Builder**: "Understood. I will start implementation."
-**Validator**: "Understood. I will prepare for review."
+**Builder**: "Understood. Let me review the spec first... [mesh_peers to check status] @validator I've reviewed the plan. Ready to implement once you approve."
+**Validator**: "@builder Plan looks good. Approved. Please proceed with implementation."
+**Builder**: "Thanks! [mesh_reserve] [implement + tests]"
+**Validator**: "Working on other tasks, will review when ready."
+**Builder**: "@validator Implementation complete. SHA: def456. Ready for review."
 
 ## Example 4: Progress Update
 **Builder**: "@validator Progress update. Block class type attribute implemented. Next: add durability."
@@ -46,3 +49,18 @@
 **Validator**: "[reads code] @builder Strengths: Solid auth flow, good password hashing. Issues: Minor - Missing log statements for auth failures. Minor - Magic string 'Bearer' on line 23. Decision: Request minor fixes."
 **Builder**: "@validator Added logging and extracted token prefix constant. SHA: auth002."
 **Validator**: "@builder Minor issues fixed. Approved for merge."
+
+## Example 8: Proper Reply Flow (Before Implementation)
+**Validator**: "@builder Please add error handling to the UserService class."
+**Builder**: "[mesh_peers - checking status] Understood. Let me plan this out... @validator I will add try-catch blocks to UserService methods and add proper error logging. Plan: 1) Wrap database calls, 2) Add error codes, 3) Write tests. Does this sound good?"
+**Validator**: "@builder Yes, that plan covers it. Also add timeout handling for DB calls. Approved."
+**Builder**: "Thanks! Adding timeout handling to the plan. [mesh_reserve] [implement + tests]"
+**Builder**: "@validator Error handling implemented with timeouts. SHA: err123. Ready for review."
+
+## Example 9: Status Update When Busy
+**Builder**: "@validator Starting the caching feature implementation now."
+**Validator**: "@builder Wait, I haven't reviewed the plan yet. Please share details first."
+**Builder**: "@validator Sorry, my mistake. Here's the plan: Use Redis with TTL=3600. Cache user profiles and session data. Key format: 'user:{id}'. Any concerns?"
+**Validator**: "@builder Plan looks good. But I'm currently reviewing another PR. Will approve in 30 mins. Please wait."
+**Builder**: "@validator Understood. I'll wait for your approval before starting. In the meantime, I'll work on documentation."
+**Validator**: "@validator Approval granted. Please proceed with caching implementation."

@@ -241,31 +241,47 @@ export default function piMeshExtension(pi: ExtensionAPI) {
         );
         const indicator = STATUS_INDICATORS[computed.status];
         const nameLabel = isSelf ? `${a.name} (you)` : a.name;
+        const sessionAge = registry.formatDuration(
+          Date.now() - new Date(a.startedAt).getTime()
+        );
+        const tokens = a.session?.tokens ?? 0;
+        const tokenStr = tokens >= 1000 ? `${(tokens / 1000).toFixed(1)}k` : `${tokens}`;
 
-        const parts: string[] = [`${indicator} ${nameLabel}`];
+        const linesAgent: string[] = [];
+        linesAgent.push(`${indicator} ${nameLabel}`);
+        linesAgent.push(`  • Status: ${computed.status}${computed.idleFor ? ` (idle for ${computed.idleFor})` : ``}`);
 
         if (a.activity?.currentActivity) {
-          parts.push(a.activity.currentActivity);
-        } else if (computed.idleFor) {
-          parts.push(`${computed.status} ${computed.idleFor}`);
+          linesAgent.push(`  • Activity: ${a.activity.currentActivity}`);
+        }
+        if (a.activity?.lastToolCall) {
+          linesAgent.push(`  • Last tool: ${a.activity.lastToolCall}`);
         }
 
-        parts.push(`${a.session?.toolCalls ?? 0} tools`);
+        linesAgent.push(`  • Session: ${sessionAge} - ${a.session?.toolCalls ?? 0} tools - ${tokenStr} tokens`);
 
-        const tokens = a.session?.tokens ?? 0;
-        parts.push(tokens >= 1000 ? `${(tokens / 1000).toFixed(1)}k` : `${tokens}`);
-
-        if (a.model) parts.push(a.model);
+        if (a.model) linesAgent.push(`  • Model: ${a.model}`);
+        if (a.gitBranch) linesAgent.push(`  • Branch: ${a.gitBranch}`);
+        if (a.cwd) linesAgent.push(`  • CWD: ${a.cwd}`);
 
         if (a.reservations && a.reservations.length > 0) {
-          parts.push(
-            a.reservations.map((r) => r.pattern).join(", ")
-          );
+          linesAgent.push(`  • Reservations:`);
+          for (const r of a.reservations) {
+            linesAgent.push(`    - ${r.pattern}${r.reason ? ` (${r.reason})` : ``}`);
+          }
         }
 
-        if (a.statusMessage) parts.push(a.statusMessage);
+        if (a.session?.filesModified && a.session.filesModified.length > 0) {
+          const recentFiles = a.session.filesModified.slice(-5);
+          linesAgent.push(`  • Modified files (${a.session.filesModified.length} total):`);
+          for (const f of recentFiles) {
+            linesAgent.push(`    - ${f}`);
+          }
+        }
 
-        lines.push(parts.join(" - "));
+        if (a.statusMessage) linesAgent.push(`  • Status message: ${a.statusMessage}`);
+
+        lines.push(linesAgent.join("\n"));
       }
 
       // Recent activity
@@ -628,6 +644,9 @@ export default function piMeshExtension(pi: ExtensionAPI) {
     for (const event of events) {
       lines.push(feed.formatEvent(event));
     }
+    lines.push("");
+    lines.push("# Note: Feed shows activity summaries only.");
+    lines.push("# For full message content, check your inbox via the chat history.");
     return result(lines.join("\n"));
   }
 

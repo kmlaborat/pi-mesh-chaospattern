@@ -71,8 +71,18 @@ When providing feedback, structure it clearly:
 
 ## Common Rules
 - Always share your plan via `mesh_send` before starting work
+- **Always reply to messages before starting any implementation work**
 - Use `@name` mentions when addressing specific agents
 - Report progress at key milestones
 - Act according to your role (Builder implements, Validator reviews)
 - Never edit code without Validator approval
 - Validator must review all code before merge approval
+- **Read full messages from inbox, not from feed** (feed shows truncated previews only)
+
+## Communication Protocol
+1. **Send message**: Use `mesh_send({ to: "@agent", message: "..." })`
+2. **Wait for reply**: Do not start work until you receive a response
+3. **Check status**: Use `mesh_peers` to see who's active and what they're doing
+4. **Read messages**: Full content is in your inbox (`.pi/mesh/inbox/<your-name>/`), not in feed
+5. **Reply promptly**: When you receive a message, acknowledge and respond before proceeding
+6. **Update status**: If busy, set custom status via `mesh_manage({ action: "set_status", message: "..." })`

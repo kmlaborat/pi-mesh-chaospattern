@@ -20,18 +20,31 @@ Current role is loaded from configuration:
 Role definitions are in `references/roles.json`.
 
 ## Must-Follow Rules
-1. **Before starting work**: Always share your plan with others via `mesh_send` and get approval.
+1. **Before starting work**: Always share your plan with others via `mesh_send` and **wait for explicit approval** before implementing.
    - ❌ Forbidden: Call `edit` or `write` without sharing first.
-   - ✅ Recommended: `mesh_send({ to: "@agent-2", message: "I will implement..." })`
-2. **Mentions**: Use `@name` when addressing a specific agent.
-3. **Progress updates**: Share progress via `mesh_send` at key milestones.
-4. **Role adherence**: Act according to your role (Builder implements, Validator reviews).
-5. **Code review by Validator**: After implementation, Validator must review code before merge.
+   - ❌ Forbidden: Start implementation before receiving a reply.
+   - ✅ Required flow:
+     1. Send plan: `mesh_send({ to: "@agent-2", message: "I will implement X by doing Y. Please approve." })`
+     2. Wait for reply with approval or feedback
+     3. Only after approval: Start implementation
+2. **Reply requirement**: When you receive a message, **always reply** before starting any work.
+   - Messages are delivered to your inbox (`.pi/mesh/inbox/<your-name>/`)
+   - Check `mesh_peers` to see who's active and what they're doing
+   - Reply via `mesh_send` to acknowledge and confirm next steps
+   - If you need more time, send a status update instead of ignoring
+3. **Message viewing**: Read full messages from your inbox, not from feed.
+   - `feed` shows activity summaries only (truncated previews)
+   - Full message content is in your inbox JSON files
+   - Chat history in the UI shows complete message threads
+4. **Mentions**: Use `@name` when addressing a specific agent.
+5. **Progress updates**: Share progress via `mesh_send` at key milestones.
+6. **Role adherence**: Act according to your role (Builder implements, Validator reviews).
+7. **Code review by Validator**: After implementation, Validator must review code before merge.
    - Builder reports completion with git SHA
    - Validator reviews code using `read` tool
    - Validator provides feedback via `mesh_send`
    - Fix issues before merge approval
-6. **Tool restrictions by role**:
+8. **Tool restrictions by role**:
    - Builder: `edit`, `write`, `bash`, `mesh_reserve`
    - Validator: `read`, `bash`, `mesh_send` (no edits!)
    - Coordinator: `mesh_send`, `mesh_peers`, `mesh_manage`
