@@ -7,3 +7,4 @@ dist/
 coverage/
 docs/plans/
 docs/verification-report.md
+.pi/
