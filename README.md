@@ -6,6 +6,8 @@ Coordinate multiple [Pi](https://github.com/badlogic/pi-mono) agents working in 
 
 **New feature:** **Chaos Pattern** - Autonomous agent-to-agent communication with built-in moderation to prevent runaway conversations.
 
+**Philosophy:** **Fluid Roles** - No fixed Coordinator. Agents self-organize as Builder or Validator based on context.
+
 No daemon, no server. Just files on disk.
 
 ## Install
@@ -230,17 +232,47 @@ This project includes a project-local skill for enhanced agent coordination:
 
 ### mesh-coordination Skill
 
-Defines rules, roles, and workflows for multi-agent coordination:
+Defines rules, **fluid roles**, and self-organizing workflows for multi-agent coordination:
 
-- **Roles**: 
-  - **Builder**: Implements code and writes tests
-  - **Validator**: Reviews code, detects bugs, approves for merge
-  - **Coordinator**: Manages progress and coordinates with others
-- **Rules**: Plan sharing via `mesh_send`, @mentions, progress updates, code review by Validator
-- **Workflow**: Plan → Implement → Validator Review → Fixes → Approval → Merge
-- **Code Review**: Validator performs code review using `read` tool (no external dependencies)
+- **Fluid Roles (Chaos Pattern Mode)**: 
+  - **No fixed roles** - Agents dynamically assume Builder or Validator based on context
+  - **When implementing** → Act as Builder (reserve files, write tests, report completion)
+  - **When reviewing** → Act as Validator (read code, provide feedback, approve/reject)
+  - **Role switching** → Announce via `mesh_send` before acting
+  - **Self-organization** → No Coordinator needed; agents resolve conflicts directly
+- **Core Rules**: 
+  - Plan sharing via `mesh_send` before editing
+  - **File reservation mandatory** before any `edit`/`write`
+  - Immediate release after completion
+  - @mentions, progress updates, peer review
+- **Workflow**: Plan → Check Reservations → Reserve → Implement → Release → Peer Review → Fixes → Approval → Merge
+- **Edge Case Handling**: 
+  - Reservation conflict resolution (5-step flow)
+  - Release failure handling (4-step procedure)
+  - Interruption/abortion procedure (4-step)
+- **Code Review**: Any agent can review; no fixed Validator role
 
 See `skills/mesh-coordination/SKILL.md` for details.
+
+### Why Chaos Pattern?
+
+Traditional multi-agent systems use **centralized coordination** (Coordinator role, task queues, leader election). This approach works but creates bottlenecks and single points of failure.
+
+**Chaos Pattern** takes a different approach:
+
+1. **Self-Organization**: Agents negotiate directly without a Coordinator
+2. **Fluid Roles**: Builder/Validator roles are temporary states, not fixed identities
+3. **Emergent Order**: Structure emerges from simple rules (reserve before edit, review before merge)
+4. **Resilience**: No central point of failure; if one agent stalls, others adapt
+5. **Scalability**: Adding more agents doesn't increase coordination complexity
+
+**Trade-off**: More initial coordination overhead (agents must communicate directly), but **higher resilience** and **better adaptability** to dynamic conditions.
+
+This is especially valuable when:
+- Multiple agents work simultaneously on different parts of the codebase
+- Agents need to adapt to changing priorities mid-task
+- You want to avoid "Coordinator bottleneck" in large teams
+- Emergent behavior is more valuable than rigid structure
 
 ## Credits
 

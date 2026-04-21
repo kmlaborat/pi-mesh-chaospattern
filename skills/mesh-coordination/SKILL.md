@@ -11,13 +11,34 @@ metadata:
 
 # Mesh Coordination Skill
 
-## Role
-Current role is loaded from configuration:
-- **Builder**: Implements code and writes tests.
-- **Validator**: Reviews code and detects bugs.
-- **Coordinator**: Manages progress and coordinates with others.
+## Fluid Roles (Chaos Pattern Mode)
 
-Role definitions are in `references/roles.json`.
+**No fixed roles.** Agents dynamically assume **Builder** or **Validator** roles based on context:
+
+1. **When implementing** → Act as **Builder**:
+   - Reserve files before editing
+   - Write tests
+   - Report completion with SHA
+
+2. **When reviewing** → Act as **Validator**:
+   - Read code with `read` tool
+   - Provide structured feedback
+   - Approve or request fixes
+
+3. **When switching roles**:
+   - Announce role change via `mesh_send`:
+     ```
+     @agent-name Switching to Builder role for [feature].
+     @agent-name Switching to Validator role for [review].
+     ```
+
+4. **Simultaneous roles**:
+   - If working on multiple tasks, split context:
+     - Task A: Builder (implementing)
+     - Task B: Validator (reviewing)
+   - Use clear messaging to avoid confusion
+
+**Key principle**: Roles are **temporary states**, not fixed identities. This enables self-organizing resilience without central coordination.
 
 ## Must-Follow Rules
 1. **Before starting work**: Always share your plan with others via `mesh_send` and **wait for explicit approval** before implementing.
@@ -44,16 +65,16 @@ Role definitions are in `references/roles.json`.
    - Chat history in the UI shows complete message threads
 5. **Mentions**: Use `@name` when addressing a specific agent.
 6. **Progress updates**: Share progress via `mesh_send` at key milestones.
-7. **Role adherence**: Act according to your role (Builder implements, Validator reviews).
-8. **Code review by Validator**: After implementation, Validator must review code before merge.
-   - Builder reports completion with git SHA
-   - Validator reviews code using `read` tool
-   - Validator provides feedback via `mesh_send`
+7. **Role switching**: Announce role changes via `mesh_send` before acting.
+8. **Code review**: After implementation, another agent must review code before merge.
+   - Implementer reports completion with git SHA
+   - Reviewer reads code using `read` tool
+   - Reviewer provides feedback via `mesh_send`
    - Fix issues before merge approval
-9. **Tool restrictions by role**:
-   - Builder: `edit`, `write`, `bash`, `mesh_reserve`, `mesh_release`
-   - Validator: `read`, `bash`, `mesh_send` (no edits!)
-   - Coordinator: `mesh_send`, `mesh_peers`, `mesh_manage`
+9. **Tool usage by context**:
+   - **As Builder**: `edit`, `write`, `bash`, `mesh_reserve`, `mesh_release`
+   - **As Validator**: `read`, `bash`, `mesh_send` (no edits!)
+   - **Role-aware**: Use tools appropriate to your current role
 
 ## Pre-Work Checklist (Builder)
 Before starting any implementation:
@@ -69,10 +90,10 @@ After completing implementation:
 - [ ] Completion report sent via `mesh_send`
 - [ ] Git commit created with SHA recorded
 
-## Coordinator Monitoring Duties
-- Periodically check `mesh_peers` to monitor reservation status
+## Peer Monitoring (Self-Organization)
+- All agents periodically check `mesh_peers` to monitor reservation status
 - Alert if reservations are held for too long without progress
-- Help resolve reservation conflicts between agents
+- Help resolve reservation conflicts directly with other agents
 - Ensure all agents release reservations after completion
 
 ## Reservation Conflict Resolution
@@ -84,18 +105,18 @@ If `mesh_reserve` fails due to conflict:
    ```
 3. **Wait for response**:
    - If agent is actively working: Wait for them to release
-   - If agent is idle/stuck: Coordinator may intervene
-   - If agent abandoned work: Request Coordinator to release
-4. **Retry reservation**: After confirmation or Coordinator intervention
-5. **Escalate if needed**: If no response after reasonable time, alert Coordinator
+   - If agent is idle/stuck: Send reminder via `mesh_send`
+   - If agent abandoned work: Request another agent to assist
+4. **Retry reservation**: After confirmation or peer assistance
+5. **Escalate if needed**: If no response after reasonable time, alert all peers via `mesh_send`
 
 ## Release Failure Handling
 If `mesh_release` fails or you're unsure if release succeeded:
 1. **Check current reservations**: Use `mesh_peers` to verify your reservations are gone
 2. **If still present**: Retry `mesh_release` with specific paths
-3. **If still failing**: Alert Coordinator immediately
+3. **If still failing**: Alert peers immediately via `mesh_send`
    ```
-   @coordinator Unable to release reservation on [path]. Please assist.
+   @agent-name Unable to release reservation on [path]. Please assist.
    ```
 4. **Do NOT proceed** with other work until reservations are confirmed released
 
@@ -116,12 +137,12 @@ If work is interrupted, cancelled, or fails mid-task:
 1. **Plan**: Present plan to others → Get approval
 2. **Check Reservations**: Use `mesh_peers` to check current reservations
 3. **Reserve Files**: Reserve specific files/directories with `mesh_reserve` BEFORE editing
-4. **Implement**: Start work (for Builders) with reservations active
+4. **Implement**: Start work (as Builder) with reservations active
 5. **Release Reservations**: Release ALL reservations immediately after editing complete
-6. **Completion Report**: Builder reports completion with git SHA
-7. **Validator Review**: Validator reviews code → Provides feedback
-8. **Fixes**: Builder fixes issues (if any) - repeat reserve/edit/release cycle
-9. **Approval**: Validator approves → Merge
+6. **Completion Report**: Implementer reports completion with git SHA
+7. **Peer Review**: Another agent reviews code → Provides feedback
+8. **Fixes**: Implementer fixes issues (if any) - repeat reserve/edit/release cycle
+9. **Approval**: Reviewer approves → Merge
 
 Refer to `references/workflows.md` for detailed workflows.
 
