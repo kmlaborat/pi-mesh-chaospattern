@@ -5,10 +5,15 @@
    ```
    @validator I will implement [feature]. Plan: [details]. Any issues?
    ```
-2. **File Reservation**: Reserve files with `mesh_reserve` (if needed)
-3. **Approval Wait**: Wait for Validator approval
-4. **Implementation**: Implement with `edit`/`write` + write tests
-5. **Completion Report**: Report via `mesh_send` with git SHA
+2. **Check Reservations**: Use `mesh_peers` to see current reservations
+3. **File Reservation**: Reserve files with `mesh_reserve` **BEFORE any editing**
+   - Reserve specific paths, not broad directories
+   - Include clear reason: `mesh_reserve({ paths: ["src/auth/"], reason: "Implementing authentication" })`
+4. **Approval Wait**: Wait for Validator approval
+5. **Implementation**: Implement with `edit`/`write` + write tests
+6. **Release Reservations**: **IMMEDIATELY release ALL reservations** after editing complete
+   - `mesh_release({ paths: [...] })` for all reserved paths
+7. **Completion Report**: Report via `mesh_send` with git SHA
    ```
    @validator Implementation complete. SHA: abc123. Ready for review.
    ```
@@ -35,9 +40,13 @@
    ```
    @builder @validator Task X assigned. Builder: implement, Validator: review.
    ```
-3. **Progress Broadcast**: Broadcast progress via `mesh_send`
-4. **Conflict Resolution**: Resolve conflicts with `mesh_manage`
-5. **Milestone Tracking**: Track task completion
+3. **Reservation Monitoring**: Periodically monitor reservation status via `mesh_peers`
+   - Alert if reservations held too long without progress
+   - Help resolve reservation conflicts between agents
+4. **Progress Broadcast**: Broadcast progress via `mesh_send`
+5. **Completion Verification**: Ensure reservations released after completion
+6. **Conflict Resolution**: Resolve conflicts with `mesh_manage`
+7. **Milestone Tracking**: Track task completion
 
 ## Code Review Guidelines for Validators
 
@@ -72,6 +81,10 @@ When providing feedback, structure it clearly:
 ## Common Rules
 - Always share your plan via `mesh_send` before starting work
 - **Always reply to messages before starting any implementation work**
+- **File Reservation**: Before any `edit` or `write`, MUST reserve with `mesh_reserve`
+  - Reserve specific paths (e.g., `src/auth/login.ts` not `src/`)
+  - Release immediately after completion with `mesh_release`
+  - Check `mesh_peers` before reserving to avoid conflicts
 - Use `@name` mentions when addressing specific agents
 - Report progress at key milestones
 - Act according to your role (Builder implements, Validator reviews)
