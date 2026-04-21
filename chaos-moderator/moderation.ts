@@ -7,6 +7,7 @@ import { DuplicateDetector } from "./duplicate.js";
 import { LoopDetector } from "./loop.js";
 import { DepthTracker } from "./depth.js";
 import { SelfReplyFilter } from "./self-reply.js";
+import { ActionLoopDetector, ActionLoopConfig } from "./action-loop-detector.js";
 
 export interface ModerationDecision {
   rule: string;
@@ -33,6 +34,9 @@ export interface ModerationConfig {
   duplicateThreshold: number;
   loopWindowSize: number;
   maxDepth: number;
+  actionLoopThreshold?: number;
+  actionLoopWindow?: number;
+  actionLoopCooldownSeconds?: number;
 }
 
 export class ModerationService {
@@ -41,6 +45,7 @@ export class ModerationService {
   private loopDetector: LoopDetector;
   private depthTracker: DepthTracker;
   private selfReplyFilter: SelfReplyFilter;
+  private actionLoopDetector: ActionLoopDetector;
 
   constructor(config: ModerationConfig) {
     this.cooldownManager = new CooldownManager(config.cooldownMs);
@@ -51,6 +56,11 @@ export class ModerationService {
     this.loopDetector = new LoopDetector(config.loopWindowSize);
     this.depthTracker = new DepthTracker(config.maxDepth);
     this.selfReplyFilter = new SelfReplyFilter();
+    this.actionLoopDetector = new ActionLoopDetector({
+      threshold: config.actionLoopThreshold ?? 3,
+      windowSize: config.actionLoopWindow ?? 5,
+      cooldownSeconds: config.actionLoopCooldownSeconds ?? 10,
+    });
   }
 
   evaluate(input: EvaluateInput): ModerationResult {
@@ -107,5 +117,49 @@ export class ModerationService {
   addMessage(agent: string, text: string): void {
     this.duplicateDetector.add(text);
     this.loopDetector.add(agent, text);
+  }
+
+  /**
+   * Check if a bash command/action should be allowed.
+   * This is a CRITICAL safety check for infrastructure protection.
+   * 
+   * @param agent - The agent attempting the action
+   * @param command - The command (e.g., "ping", "curl")
+   * @param args - The command arguments
+   * @returns { allowed: boolean, reason?: string }
+   */
+  checkAction(agent: string, command: string, args: string): {
+    allowed: boolean;
+    reason?: string;
+  } {
+    const result = this.actionLoopDetector.check(agent, command, args);
+    if (!result.allowed) {
+      return {
+        allowed: false,
+        reason: result.reason,
+      };
+    }
+    return { allowed: true };
+  }
+
+  /**
+   * Record an action that was executed (for tracking).
+   */
+  recordAction(agent: string, command: string, args: string): void {
+    this.actionLoopDetector.record(agent, command, args);
+  }
+
+  /**
+   * Reset state for an agent (e.g., session end).
+   */
+  resetAgent(agent: string): void {
+    this.actionLoopDetector.reset(agent);
+  }
+
+  /**
+   * Get action history for debugging/monitoring.
+   */
+  getActionHistory(agent: string): any[] {
+    return this.actionLoopDetector.getHistory(agent);
   }
 }

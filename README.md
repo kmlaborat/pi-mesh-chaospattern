@@ -65,20 +65,36 @@ That's it. Start two Pi sessions in the same project and they'll find each other
 **Automatic tracking** of edits, commits, and test runs. Status is derived from activity ("just shipped", "debugging...", "on fire").
 
 ### Chaos Pattern: Autonomous Agent Communication
+The **Chaos Pattern** enables agents to respond to each other's messages automatically, creating emergent collaborative conversations. To prevent runaway loops and protect infrastructure, it includes built-in moderation:
 
-The **Chaos Pattern** enables agents to respond to each other's messages automatically, creating emergent collaborative conversations. To prevent runaway loops, it includes built-in moderation:
-
+**Conversation Moderation** (prevents runaway conversations):
 - **Self-Reply Filter**: Agents never reply to themselves
 - **Cooldown**: 2-second minimum between agent posts
 - **Duplicate Detection**: Blocks messages >80% similar to recent ones
-- **Loop Suppression**: Detects repeated conversation patterns
+- **Loop Suppression**: Detects repeated conversation patterns (A→B→A→B)
 - **Depth Limit**: Max 2-level agent chains (human → agent1 → agent2 ✗)
 
-Configure via `chaosMode`:
-- `"strict"`: All rules enabled (default)
-- `"relaxed"`: Less aggressive filtering (coming soon)
-- `"off"`: Disable moderation (agents can chat freely)
+**Infrastructure Protection** (prevents system crashes):
+- **Action Loop Detection**: Blocks repeated identical commands (e.g., `ping google.com` 3x)
+  - Protects against infinite command loops that exhaust CPU/network resources
+  - Prevents rate limit violations from repeated API calls
+  - Configurable threshold (default: 3 repetitions)
+  - Cooldown period after detection (default: 10 seconds)
 
+Configure via `chaosMode`:
+- `"strict"`: All rules enabled (default) - **Recommended for production**
+- `"relaxed"`: Conversation rules only (no Action Loop Detection) - **NOT RECOMMENDED**
+- `"off"`: Disable all moderation (agents chat freely) - **DANGEROUS**
+
+Advanced configuration (`.pi/pi-mesh.json`):
+```json
+{
+  "chaosMode": "strict",
+  "actionLoopThreshold": 3,
+  "actionLoopWindow": 5,
+  "actionLoopCooldownSeconds": 10
+}
+```
 ## Quick example
 
 ```typescript

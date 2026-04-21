@@ -19,6 +19,9 @@ export interface MeshConfig {
   autoStatus: boolean;
   hooksModule?: string;
   chaosMode: "strict" | "relaxed" | "off";
+  actionLoopThreshold?: number;
+  actionLoopWindow?: number;
+  actionLoopCooldownSeconds?: number;
 }
 
 // =============================================================================

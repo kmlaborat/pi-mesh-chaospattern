@@ -21,6 +21,9 @@ const DEFAULT_CONFIG: MeshConfig = {
   stuckThreshold: 900,
   autoStatus: true,
   chaosMode: "strict",
+  actionLoopThreshold: 3,
+  actionLoopWindow: 5,
+  actionLoopCooldownSeconds: 10,
 };
 
 function readJsonFile(path: string): Record<string, unknown> | null {

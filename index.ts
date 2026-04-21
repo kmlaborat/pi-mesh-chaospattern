@@ -751,6 +751,9 @@ export default function piMeshExtension(pi: ExtensionAPI) {
           duplicateThreshold: 0.8,
           loopWindowSize: 5,
           maxDepth: 2,
+          actionLoopThreshold: config.actionLoopThreshold ?? 3,
+          actionLoopWindow: config.actionLoopWindow ?? 5,
+          actionLoopCooldownSeconds: config.actionLoopCooldownSeconds ?? 10,
         });
       }
 
@@ -784,7 +787,31 @@ export default function piMeshExtension(pi: ExtensionAPI) {
     const toolName = event.toolName;
     const input = event.input as Record<string, unknown>;
 
-    // 1. Reservation enforcement (runs first, before tracking)
+    // 1. Action Loop Detection (runs BEFORE all other checks)
+    // CRITICAL: Protects infrastructure from runaway command loops
+    if (state.registered && toolName === "bash" && moderator && config.chaosMode !== "off") {
+      const command = (input.command as string) || (input.args as string) || "";
+      if (command) {
+        // Parse command and args
+        const parts = command.trim().split(/\s+/);
+        const cmd = parts[0];
+        const args = parts.slice(1).join(" ");
+
+        const actionCheck = moderator.checkAction(state.agentName, cmd, args);
+        if (!actionCheck.allowed) {
+          feed.logEvent(
+            dirs,
+            state.agentName,
+            "action_blocked",
+            "bash",
+            actionCheck.reason
+          );
+          return { block: true, reason: actionCheck.reason };
+        }
+      }
+    }
+
+    // 2. Reservation enforcement (runs after action loop check)
     if (state.registered && (toolName === "edit" || toolName === "write")) {
       const path = input.path as string;
       if (path) {
@@ -807,7 +834,7 @@ export default function piMeshExtension(pi: ExtensionAPI) {
       }
     }
 
-    // 2. Activity tracking
+    // 3. Activity tracking
     if (state.registered) {
       tracking.onToolCall(toolName, input, state, dirs);
     }
