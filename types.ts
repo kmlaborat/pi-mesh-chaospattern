@@ -18,7 +18,7 @@ export interface MeshConfig {
   stuckThreshold: number;
   autoStatus: boolean;
   hooksModule?: string;
-  chaosMode: "strict" | "relaxed" | "off";
+  chaosMode: "strict" | "off";
   actionLoopThreshold?: number;
   actionLoopWindow?: number;
   actionLoopCooldownSeconds?: number;

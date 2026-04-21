@@ -1,8 +1,8 @@
 # pi-mesh-chaospattern Design Specification
 
-> **Version:** 1.0.0-draft  
-> **Status:** Design Specification (Not yet fully implemented)  
-> **Philosophy:** Self-Organizing Resilience through Fluid Roles
+> **Version:** 2.0.0-conceptual  
+> **Status:** Conceptual Design  
+> **Philosophy:** Self-Organizing Resilience through Fluid Roles & Controlled Chaos
 
 ---
 
@@ -11,23 +11,35 @@
 ### 1.1 Core Vision
 **Create a multi-agent coordination system where order emerges from chaos, not imposed from above.**
 
+**pi-mesh-chaospattern** is not a management tool; it is an **ecosystem** for agent collaboration.
+
+**The Fundamental Principle**: 
+> **"Agents are free to act as they choose, as long as they do not harm the system or its environment."**
+
+This principle defines the boundary between **autonomy** and **safety**:
+- **Within the boundary**: Agents have maximum freedom. They choose roles, negotiate, experiment, fail, and learn. No central authority dictates their actions.
+- **Beyond the boundary**: The system actively intervenes. If an agent's actions threaten the machine, the network, or other agents, the system stops them—immediately and unconditionally.
+
+**This is not a compromise; it is the foundation of sustainable autonomy.**
+
 Traditional multi-agent systems rely on **centralized control** (Coordinator, task queues, leader election). This creates:
 - Single points of failure
 - Coordination bottlenecks
 - Rigid structures that break under dynamic conditions
 - Limited adaptability to changing priorities
 
-**pi-mesh-chaospattern** takes a different approach:
+**pi-mesh-chaospattern** takes a fundamentally different approach:
 - **Self-Organization**: Agents negotiate directly without a central authority
 - **Fluid Roles**: Roles are temporary states, not fixed identities
 - **Emergent Order**: Structure emerges from simple, enforceable rules
 - **Resilience**: No central point of failure; agents adapt when peers stall
 - **Scalability**: Adding agents doesn't increase coordination complexity
+- **Maximum Autonomy**: Agents are free to act, as long as they do not cause external harm
 
 ### 1.2 The Chaos Pattern Principle
 > **"Structure emerges from simple rules, not from imposed hierarchy."**
 
-Just as natural systems (flocks of birds, ant colonies, neural networks) achieve complex behavior through simple local interactions, this system achieves coordinated multi-agent collaboration through:
+Just as natural systems (flocks of birds, ant colonies, neural networks) achieve complex behavior through simple local interactions, this system achieves coordinated multi-agent collaboration through **five core laws**:
 
 1. **Reserve before edit** → Prevents file conflicts
 2. **Review before merge** → Ensures quality
@@ -35,27 +47,27 @@ Just as natural systems (flocks of birds, ant colonies, neural networks) achieve
 4. **Release immediately** → Enables fluidity
 5. **Peer-to-peer resolution** → No escalation needed
 
+**These laws are not commands; they are the physics of this ecosystem.** Agents that follow them thrive; those that don't create friction.
+
 ### 1.3 Why Chaos Pattern? (The Deeper Why)
 
 **The Problem with Centralized Coordination:**
-- **Coordinator becomes a bottleneck**: As agent count grows, the Coordinator cannot scale to handle all coordination
-- **Single point of failure**: If Coordinator stalls or crashes, the entire system freezes
-- **Rigid structure prevents adaptation**: Agents cannot respond to unexpected situations without Coordinator approval
-- **Coordinator lacks local knowledge**: Individual agents have context that Coordinator cannot access
-- **Artificial hierarchy**: Forces agents into fixed roles regardless of current capacity or expertise
+- **Coordinator becomes a bottleneck**: As agent count grows, the Coordinator cannot scale
+- **Single point of failure**: If Coordinator stalls, the entire system freezes
+- **Rigid structure prevents adaptation**: Agents cannot respond to unexpected situations
+- **Artificial hierarchy**: Forces agents into fixed roles regardless of capacity
 
 **Why Fluid Roles Work Better:**
-- **Local knowledge utilization**: Agents make decisions based on their immediate context
-- **Natural load balancing**: Agents self-select roles based on current capacity (no "Validator bottleneck")
+- **Local knowledge utilization**: Agents make decisions based on immediate context
+- **Natural load balancing**: Agents self-select roles based on current capacity
 - **Self-healing**: If one agent stalls, others naturally pick up the work
 - **Expertise emergence**: Agents gravitate toward roles they excel at over time
 - **No single point of failure**: System continues functioning even if agents drop
 
 **Why Self-Organization Over Control:**
-- **Complexity of codebases**: Rigid rules cannot anticipate all scenarios; agents need flexibility
+- **Complexity of codebases**: Rigid rules cannot anticipate all scenarios
 - **Negotiation over obedience**: Agents negotiate solutions, not just follow orders
 - **Creative problem-solving**: Emergent behavior leads to innovative solutions
-- **Human intervention as exception**: Humans should observe and learn, not micromanage
 - **Adaptive evolution**: System improves organically as patterns emerge
 
 ### 1.4 Trade-offs
@@ -80,37 +92,15 @@ Just as natural systems (flocks of birds, ant colonies, neural networks) achieve
 
 ## 2. System Architecture
 
-### 2.1 Core Components
+### 2.1 Core Principles
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                     pi-mesh-chaospattern                     │
-├─────────────────────────────────────────────────────────────┤
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐       │
-│  │  Presence    │  │  Messaging   │  │ Reservations │       │
-│  │  (mesh_peers)│  │  (mesh_send) │  │ (mesh_reserve)│      │
-│  └──────────────┘  └──────────────┘  └──────────────┘       │
-│         │                   │                   │            │
-│         └───────────────────┼───────────────────┘            │
-│                             ▼                                │
-│  ┌──────────────────────────────────────────────────────┐   │
-│  │              Chaos Pattern Moderation                 │   │
-│  │  - Self-Reply Filter  - Cooldown  - Duplicate Detection│  │
-│  │  - Loop Suppression   - Depth Limit                   │   │
-│  └──────────────────────────────────────────────────────┘   │
-│                             │                                │
-│         ┌───────────────────┼───────────────────┐            │
-│         ▼                   ▼                   ▼            │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐       │
-│  │  Builder     │  │   Validator  │  │  (None)      │       │
-│  │  (Implement) │  │   (Review)   │  │ Coordinator  │       │
-│  │  Role State  │  │  Role State  │  │   REMOVED    │       │
-│  └──────────────┘  └──────────────┘  └──────────────┘       │
-│         │                   │                                │
-│         └───────────────────┘                                │
-│                  Fluid Role Switching                        │
-└─────────────────────────────────────────────────────────────┘
-```
+The system is built on three pillars:
+
+1. **Presence** (`mesh_peers`): Real-time visibility into agent states
+2. **Messaging** (`mesh_send`): Direct peer-to-peer communication
+3. **Reservations** (`mesh_reserve`/`mesh_release`): Conflict-free collaboration
+
+**No Coordinator exists.** These three primitives are the only infrastructure; everything else emerges from their interaction.
 
 ### 2.2 Data Flow
 
@@ -146,13 +136,13 @@ interface MeshState {
 }
 ```
 
-**Key Insight**: Role is a **temporary state**, not a permanent identity.
+**Key Insight**: Role is a **temporary state**, not a permanent identity. An agent can be Builder for Task A and Validator for Task B simultaneously.
 
 ---
 
 ## 3. Core Rules (The "Simple Laws")
 
-These rules are **enforced by the system**, not just recommended:
+These rules are **the physics of the ecosystem**, not recommendations:
 
 ### 3.1 Rule 1: Reserve Before Edit
 ```
@@ -163,19 +153,111 @@ BEFORE any edit/write operation:
   4. ONLY AFTER reservation confirmed: Proceed with edit
 ```
 
-**Enforcement**: `mesh_reserve` blocks conflicting edits at the tool level.
+**Purpose**: Prevents file conflicts without a central lock manager.
 
-### 3.2 Rule 2: Review Before Merge
+### 3.2 Rule 2: Builder-Validator Chain (Plan Approval + Code Review)
+
+**The system operates on a two-phase collaboration model between Builder and Validator**:
+
+#### Phase 1: Plan Approval (Before Implementation)
 ```
-BEFORE merging any code:
-  1. Implementer reports completion with git SHA
-  2. Another agent (as Validator) reviews code
-  3. Reviewer provides structured feedback
-  4. Implementer fixes issues (if any)
-  5. Reviewer approves → Merge allowed
+BEFORE starting implementation:
+  1. Builder announces intent: "I will implement [feature] by doing [plan]."
+  2. Builder requests Validator: "Can you review this plan?"
+  3. Validator responds:
+     - Approves → Builder proceeds with implementation
+     - Requests changes → Builder revises plan and re-requests
+     - Declines (e.g., conflict with other work) → Builder waits or finds another Validator
+  4. ONLY AFTER Validator approval: Builder reserves files and implements
 ```
 
-**Enforcement**: Human-in-the-loop; no automated enforcement, but skill enforces workflow.
+**Purpose**: Prevents wasted effort, ensures alignment on approach, and establishes the Builder-Validator relationship **before** work begins.
+
+#### Phase 2: Code Review (After Implementation)
+```
+AFTER implementation complete (before merge):
+  1. Builder reports completion with git SHA: "Implementation complete. Ready for review."
+  2. Validator reviews code using `read` tool
+  3. Validator provides structured feedback:
+     - Approves → Merge allowed
+     - Requests fixes → Builder revises (repeat reserve/edit/release cycle)
+  4. ONLY AFTER Validator approval: Merge allowed
+```
+
+**Purpose**: Ensures code quality through peer review, not central gatekeeping.
+
+**Key Principles**:
+- **Plan Approval** establishes **intent alignment** before work.
+- **Code Review** ensures **quality assurance** after work.
+- **Both phases require explicit Validator involvement**. No silent reviews, no assumed availability.
+- **Human is not involved** in either phase. Agents negotiate directly.
+
+**Why This Matters**:
+- Without Plan Approval: Builder may implement something Validator disagrees with → wasted effort.
+- Without Code Review: Code may merge with issues → quality degradation.
+- Without explicit Validator involvement: Builder waits indefinitely, or Validator reviews without context → coordination failure.
+
+---
+
+### 3.2.1 Implementation Guidelines for Builder-Validator Chain
+
+To ensure the Builder-Validator Chain functions as a **self-organizing, autonomous system**, the following design principles must be applied in **prompt engineering** and **workflow logic**:
+
+#### A. Role Separation (Distinct System Prompts)
+
+**Builder and Validator must have fundamentally different system prompts** to enforce their respective roles:
+
+| Role | System Prompt Characteristics | Behavioral Goal |
+|------|-------------------------------|-----------------|
+| **Builder** | - "You are an implementer. Focus on execution, efficiency, and meeting the approved plan." <br> - "Do not second-guess the plan; implement it faithfully." <br> - "If you encounter issues, report them to the Validator for guidance." | **Execution-focused**: Implements the plan without hesitation, but seeks clarification when blocked. |
+| **Validator** | - "You are a critic. Focus on correctness, security, maintainability, and alignment with the plan." <br> - "Be strict and skeptical. Do not approve code that has flaws." <br> - "Your goal is to prevent bad code from merging, not to be nice." | **Quality-focused**: Actively searches for flaws, rejects incomplete work, and enforces standards. |
+
+**Why**: If both agents have the same prompt, they will converge on similar thinking patterns, defeating the purpose of a "critical review." The Validator must be **psychologically distinct** from the Builder to provide genuine oversight.
+
+#### B. Context Sharing (Approved Plan as Constraint)
+
+**The "Approved Plan" from Phase 1 must be explicitly passed to the Builder as a constraint during Phase 2 (Implementation)**:
+
+```
+[SYSTEM CONTEXT FOR BUILDER]
+You are implementing the following approved plan:
+<approved_plan>
+[Plan content approved by Validator in Phase 1]
+</approved_plan>
+
+**Constraints**:
+- Do not deviate from this plan unless explicitly approved by the Validator.
+- If you encounter a blocker, report it to the Validator with your proposed solution.
+- Your implementation must be verifiable against this plan.
+```
+
+**Why**: This ensures **intent alignment** is maintained throughout implementation. Without this, the Builder may drift from the agreed-upon approach, rendering the Phase 1 approval meaningless.
+
+#### C. Autonomous Loop (Self-Correction Until Approval)
+
+**The Builder must be instructed to loop until the Validator approves**:
+
+```
+[SYSTEM INSTRUCTION FOR BUILDER]
+When the Validator provides feedback:
+1. Analyze the feedback carefully.
+2. If the feedback indicates flaws or missing requirements:
+   - **Do not stop**. Modify your implementation to address the feedback.
+   - Re-test and re-submit for review.
+   - Repeat this loop until the Validator explicitly says "LGTM" or "Approved".
+3. If the feedback is unclear, ask the Validator for clarification before proceeding.
+
+**Critical**: You must not consider the task complete until the Validator approves. Do not assume approval; wait for explicit confirmation.
+```
+
+**Why**: This creates a **self-correcting loop** where the Builder autonomously iterates until quality standards are met. It eliminates the need for human intervention in the review cycle and ensures that **only approved code merges**.
+
+**Combined Effect**:
+- **Role Separation** ensures distinct perspectives (builder vs. critic).
+- **Context Sharing** ensures the plan is followed faithfully.
+- **Autonomous Loop** ensures quality is achieved without human intervention.
+
+**Result**: A fully autonomous, self-organizing collaboration where agents negotiate, implement, review, and iterate until consensus is reached.
 
 ### 3.3 Rule 3: Release Immediately
 ```
@@ -186,7 +268,7 @@ AFTER completing any edit:
   4. ONLY AFTER release confirmed: Proceed with other work
 ```
 
-**Enforcement**: Skill checklist; system does not auto-release.
+**Purpose**: Enables fluidity; prevents resource hoarding.
 
 ### 3.4 Rule 4: Announce Role Changes
 ```
@@ -196,7 +278,7 @@ WHEN switching roles:
   3. Proceed with new role actions
 ```
 
-**Enforcement**: Skill rule; no system enforcement.
+**Purpose**: Maintains transparency; enables peer awareness.
 
 ### 3.5 Rule 5: Peer-to-Peer Resolution
 ```
@@ -207,7 +289,7 @@ WHEN conflict or issue occurs:
   4. Resolve collaboratively
 ```
 
-**Enforcement**: No Coordinator exists; agents must resolve directly.
+**Purpose**: No escalation hierarchy; all agents are peers.
 
 ---
 
@@ -316,33 +398,172 @@ Step 4: If still no resolution after reasonable time:
 
 ---
 
-## 6. Chaos Pattern Moderation
+## 6. Chaos Pattern Moderation: Protecting Autonomy & Infrastructure
 
-### 6.1 Purpose
-Prevent runaway conversations while enabling emergent collaboration.
+### 6.1 The Philosophy of Moderation
 
-### 6.2 Moderation Rules
+**The system respects maximum agent autonomy.** Agents are free to:
+- Choose their own roles
+- Negotiate directly with peers
+- Decide when to implement, review, or wait
+- Make mistakes and learn from them
 
-| Rule | Description | Action |
-|------|-------------|--------|
-| **Self-Reply Filter** | Agent never replies to its own message | Block |
-| **Cooldown** | Minimum 2 seconds between agent posts | Delay |
-| **Duplicate Detection** | Block messages >80% similar to recent ones | Block |
-| **Loop Suppression** | Detect repeated conversation patterns (A→B→A→B) | Block |
-| **Depth Limit** | Max 2-level agent chains (human → agent1 → agent2 ✗) | Block |
-| **Action Loop Detection** | Detect repeated identical actions (e.g., `ping` 3x) | **Block & Notify** |
+**However, absolute freedom can lead to catastrophe.** A system where agents can:
+- Reply to themselves endlessly → Wastes compute, degrades performance
+- Execute the same command in an infinite loop → **Crashes local machines, exhausts CPU/memory**
+- Send `ping` or network requests in a loop → **Overwhelms network infrastructure, triggers DoS**
+- Engage in endless back-and-forth without resolution → Deadlocks the collaboration
 
-**Critical Distinction**: The first 5 rules protect **conversation quality**. The 6th rule (Action Loop Detection) protects **system infrastructure**.
+...is not a self-organizing system; it is a **system on the brink of collapse**.
 
-- **Conversation Loop**: Agents stuck in endless back-and-forth → Wastes compute, but harmless.
-- **Action Loop**: Agent repeatedly executing the same command (e.g., `ping`, `curl`, `git fetch`) → Can exhaust network bandwidth, CPU, or trigger rate limits.
+**Moderation operates at two distinct levels**:
 
-**Action Loop Detection is mandatory** because:
-1. Current LLMs are prone to getting stuck in action loops.
-2. Infinite loops can crash local machines or overwhelm infrastructure.
-3. This is not a restriction on autonomy; it is a **safety guardrail** that enables safe autonomy.
+1. **Conversation Guardrails** (Soft Constraints): Prevent inefficient dialogue, encourage productive exchange. These are "gentle nudges" toward better collaboration.
+2. **Infrastructure Safeguards** (Hard Stops): **Actively intervene** to prevent physical damage to machines or network infrastructure. These are "emergency brakes" that must be pulled without hesitation.
 
-### 6.2.1 Action Loop Detection Protocol
+**The key distinction**: 
+- Guardrails **guide** behavior.
+- Safeguards **stop** behavior that threatens system survival.
+
+Just as a self-driving car can have lane-keeping assist (gentle steering correction) but MUST have an emergency stop when a pedestrian appears (hard stop), **this system must both guide conversation and actively prevent infrastructure destruction**.
+
+### 6.2 The Two-Tier Protection Model
+
+#### Tier 1: Conversation Guardrails (Soft Constraints)
+
+These rules protect **collaboration quality**. They are "soft" because they guide rather than force:
+
+| Rule | Purpose | Effect |
+|------|---------|--------|
+| **Self-Reply Filter** | Prevent agents from talking to themselves | Blocks self-replies |
+| **Cooldown** | Prevent message flooding | Delays rapid successive posts |
+| **Duplicate Detection** | Prevent redundant communication | Blocks >80% similar messages |
+| **Loop Suppression** | Prevent endless conversation cycles | Blocks repeated A→B→A→B patterns |
+| **Depth Limit** | Prevent recursive agent chains | Blocks chains >2 levels deep |
+
+**Philosophy**: These rules assume agents will respond to gentle guidance. If an agent ignores them, the system logs the behavior but continues.
+
+#### Tier 2: Infrastructure Safeguards (Hard Stops)
+
+These rules protect **system survival**. They are "hard" because they must stop destructive behavior **immediately and unconditionally**:
+
+| Rule | Purpose | Effect |
+|------|---------|--------|
+| **Action Loop Detection** | **Prevent machine crash / network DoS** | **Blocks & halts repeated identical commands** |
+| **Resource Threshold** | **Prevent CPU/memory exhaustion** | **Interrupts agent if resource usage exceeds limit** |
+| **Network Quota** | **Prevent infrastructure overload** | **Blocks network requests after threshold** |
+
+**Philosophy**: These rules do not negotiate. When triggered, they **actively stop** the agent's execution and force a strategy change. There is no "warning" phase; the stop is immediate.
+
+**Why Active Intervention is Non-Negotiable**:
+
+1. **LLM Instability**: Local LLMs can enter infinite reasoning loops due to:
+   - Ambiguous prompts
+   - Feedback loops in self-correction
+   - Edge cases in problem-solving
+   - Model hallucinations leading to repeated failed attempts
+
+2. **Infrastructure Risk**: Repeated commands like `ping`, `curl`, `git fetch` can:
+   - Exhaust network bandwidth (DoS-like behavior)
+   - Trigger rate limits or IP bans
+   - Overload remote servers
+   - Cause local network congestion
+
+3. **Machine Destruction**: Infinite loops can:
+   - Exhaust CPU (100% utilization for hours)
+   - Deplete memory (OOM crashes)
+   - Overheat hardware (thermal throttling or damage)
+   - Drain battery (laptops)
+
+**The system must NOT wait for an agent to "realize" it's looping. It must intervene proactively.**
+
+### 6.3 Action Loop Detection: The Emergency Brake
+
+**The Principle**: An agent can try many approaches, but not the **same** approach infinitely.
+
+**Detection Logic**:
+```python
+WHEN an agent executes an action:
+  1. Record action hash (command + args + target)
+  2. Check last N actions (N=5 default)
+  3. IF same action appears M times (M=3 default) within window:
+     - **IMMEDIATELY BLOCK** the action
+     - **HALT** agent execution
+     - Return error: "⚠️ CRITICAL: Action loop detected. [action] repeated 3 times. Execution halted."
+     - Provide feedback: "Your approach is stuck. Try a fundamentally different strategy."
+     - Activate **cooldown period** (10 seconds default)
+     - **During cooldown: ALL actions from this agent are blocked**
+```
+
+**Examples**:
+- ✅ Allowed: `ping google.com` → `ping 8.8.8.8` → `curl example.com` (different actions)
+- ❌ **BLOCKED**: `ping google.com` → `ping google.com` → `ping google.com` → **HALT**
+- ❌ **BLOCKED**: `git fetch` → `git status` → `git fetch` → `git status` → **HALT** (alternating loop)
+
+**Cooldown Mechanism**:
+- **Duration**: 10 seconds (configurable, but minimum 5 seconds)
+- **Scope**: **All actions** from the agent are blocked, not just the repeated one
+- **Purpose**: Force a "cooling off" period; prevent immediate retry
+- **Manual Override**: Human can clear cooldown via `mesh_manage` if needed
+
+**Post-Block Behavior**:
+- Agent receives explicit feedback: "Your approach is stuck. Try a different strategy."
+- Agent must **re-evaluate** its approach before resuming
+- System logs the incident for analysis
+- If the agent attempts the same loop again after cooldown, **escalate to human**
+
+**Why This is Different from Conversation Moderation**:
+- Conversation moderation: "Please don't repeat that message."
+- Action loop detection: **"STOP. Your action is destroying the system. Do not proceed."**
+
+### 6.4 Resource & Network Safeguards (Future Enhancement)
+
+While Action Loop Detection is the **minimum required safeguard**, the system should also consider:
+
+| Safeguard | Trigger | Action |
+|-----------|---------|--------|
+| **CPU/Memory Threshold** | Agent process exceeds 90% CPU or 80% memory for >30s | **Interrupt agent**; log resource usage; notify human |
+| **Network Request Quota** | Agent makes >100 network requests in 1 minute | **Block further network requests**; require human approval to resume |
+| **File I/O Rate Limit** | Agent performs >50 file operations in 10 seconds | **Throttle operations**; log excessive I/O |
+
+**Philosophy**: These safeguards are "defense in depth." Action Loop Detection is the **first line of defense**; resource monitoring is the **second line**.
+
+**Implementation Note**: Resource monitoring requires integration with OS-level metrics (e.g., `psutil` on Linux/macOS, `wmi` on Windows). This is a **future enhancement** but should be planned for production deployments.
+
+### 6.5 Configuration Philosophy
+
+```json
+{
+  "chaosMode": "strict" | "off",
+  "actionLoopThreshold": 3,
+  "actionWindow": 5,
+  "cooldownSeconds": 10,
+  "enableResourceMonitoring": true,
+  "cpuThresholdPercent": 90,
+  "memoryThresholdPercent": 80,
+  "networkQuotaPerMinute": 100
+}
+```
+
+- **strict** (default): **All rules enabled** + **Action Loop Detection enforced** + Resource monitoring active
+- **off**: **Conversation rules disabled** (free chat) + **Action Loop Detection STILL ENFORCED** at system level
+
+**Critical Rule**: **Action Loop Detection CANNOT be disabled** in any environment, including `off` mode. It is a **system-level safety mechanism**, not a configurable feature.
+
+**The Philosophy**: 
+- **strict** mode is the default because **safety enables freedom**. All protections active.
+- **off** mode disables **conversation moderation** only (no self-reply filter, no cooldown, etc.) to allow free-form experimentation. **However, infrastructure protection (Action Loop Detection) remains active** because it is a safety requirement, not a convenience feature.
+
+**Why Action Loop Detection Must Always Be Active**:
+1. LLM instability is unpredictable; it can happen in any environment, even during free-form experimentation.
+2. The cost of a machine crash or network DoS far exceeds the cost of a false positive.
+3. This is not a "feature"; it is a **safety requirement** like a seatbelt in a car. You can disable airbags (conversation rules) for testing, but you cannot disable the seatbelt (Action Loop Detection).
+
+**Note**: The `relaxed` mode has been removed from the specification. The binary choice between **strict** (full protection) and **off** (conversation only, infrastructure protection always on) better reflects the system's philosophy: **infrastructure safety is non-negotiable**.
+
+### 6.2.1 Action Loop Detection: The Safety Net
+
+**The Principle**: An agent can try many approaches, but not the **same** approach infinitely.
 
 **Detection Logic**:
 ```
@@ -360,52 +581,22 @@ WHEN an agent executes an action:
 - ❌ Blocked: `ping google.com` → `ping google.com` → `ping google.com` → **STOP**
 - ❌ Blocked: `git fetch` → `git status` → `git fetch` → `git status` → **STOP**
 
-**Configuration**:
-```json
-{
-  "actionLoopThreshold": 3,  // Max repetitions before blocking
-  "actionWindow": 5,         // Lookback window for detection
-  "cooldownSeconds": 10      // Cooldown after loop detected (seconds)
-}
-```
+**Cooldown Mechanism**:
+- After loop detection, a **cooldown period** is activated for the agent.
+- During cooldown, **all** actions from that agent are blocked (not just the repeated one).
+- Prevents immediate retry and forces a "cooling off" period.
+- Can be manually cleared by human intervention.
 
-### 6.2.2 Operational Features (Safety & Observability)
+**Purpose**: Not to punish, but to **force a change in strategy**. The agent must think differently, not repeat the same action.
 
-To ensure safe operation and enable debugging, the following features are **required**:
-
-1. **Per-Agent Tracking**:
-   - Each agent maintains an independent action history.
-   - Prevents cross-agent interference and ensures accurate detection.
-   - Implemented via `Map<agent, ActionRecord[]>`.
-
-2. **Cooldown Management**:
-   - After loop detection, a cooldown period is activated for the agent.
-   - During cooldown, **all** actions from that agent are blocked (not just the repeated one).
-   - Prevents immediate retry and forces a "cooling off" period.
-   - Configurable duration (default: 10 seconds).
-   - Can be manually cleared by human intervention (`clearCooldown()`).
-
-3. **History & Observability**:
-   - Action history is retained for debugging and monitoring.
-   - `getHistory(agent)` returns the list of recent actions for an agent.
-   - Enables post-incident analysis and pattern detection.
-   - Supports `mesh_manage` analytics features (future).
-
-4. **Reset Capability**:
-   - `reset(agent)` clears both history and cooldown for an agent.
-   - Used when an agent session ends or is restarted.
-   - Prevents stale data from affecting future sessions.
-
-**Implementation Note**: These features were added to ensure the system is **operationally safe** and **debuggable**, not just functionally correct. They are essential for production use.
-
-### 6.3 Configuration
+### 6.3 Configuration Philosophy
 
 ```json
 {
   "chaosMode": "strict" | "relaxed" | "off",
   "actionLoopThreshold": 3,
   "actionWindow": 5,
-  "cooldownSeconds": 2
+  "cooldownSeconds": 10
 }
 ```
 
@@ -415,32 +606,37 @@ To ensure safe operation and enable debugging, the following features are **requ
 
 **Important**: Action Loop Detection should **never** be disabled in production environments. It is a system-level safety mechanism, not an optional feature.
 
+**The Philosophy**: 
+- **strict** mode is the default because **safety enables freedom**.
+- **relaxed** mode is for experimentation, not production.
+- **off** mode is theoretical; disabling all moderation leads to system collapse.
+
 ---
 
-## 7. Emergent Behaviors (Expected)
+## 7. Emergent Behaviors (Expected Patterns)
 
-### 7.1 Desired Emergent Patterns (Concrete Examples)
+### 7.1 Desired Emergent Patterns
 
 **Pattern A: Natural Review Load Balancing**
-- **Scenario**: 3 agents complete features simultaneously
+- **Scenario**: Multiple agents complete features simultaneously
 - **Emergence**: Agents naturally pick up reviews based on current capacity
 - **Outcome**: No single agent becomes the "review bottleneck"; work distributes organically
-- **Success Signal**: Review times remain consistent regardless of how many features are ready
+- **Success Signal**: Review times remain consistent regardless of feature count
 
 **Pattern B: Expertise-Based Role Specialization**
-- **Scenario**: Over time, certain agents show strength in specific areas (e.g., one excels at backend, another at frontend)
+- **Scenario**: Over time, certain agents show strength in specific areas
 - **Emergence**: Agents naturally gravitate toward roles they excel at
 - **Outcome**: Higher quality reviews, faster implementation, organic team structure
 - **Success Signal**: Review feedback becomes more targeted and constructive
 
 **Pattern C: Self-Healing Conflict Resolution**
 - **Scenario**: Two agents conflict on file reservation
-- **Emergence**: Agents negotiate directly, find creative solutions (e.g., "I'll wait 5 min", "Let's split the file")
+- **Emergence**: Agents negotiate directly, find creative solutions
 - **Outcome**: No Coordinator needed; conflicts resolved faster than centralized mediation
 - **Success Signal**: Conflict resolution time decreases over time
 
 **Pattern D: Adaptive Workflow Optimization**
-- **Scenario**: Team discovers a more efficient review pattern (e.g., "batch reviews every hour")
+- **Scenario**: Team discovers a more efficient review pattern
 - **Emergence**: Pattern spreads organically through peer communication
 - **Outcome**: Continuous improvement without top-down mandates
 - **Success Signal**: Time-to-merge decreases over time
@@ -553,46 +749,9 @@ To ensure safe operation and enable debugging, the following features are **requ
 
 ---
 
-## 9. Implementation Roadmap
+## 9. Success Criteria
 
-### Phase 1: Core Coordination (✅ Complete)
-- [x] Presence (mesh_peers)
-- [x] Messaging (mesh_send)
-- [x] Reservations (mesh_reserve/mesh_release)
-- [x] Chaos Pattern Moderation
-
-### Phase 2: Fluid Roles (✅ Complete)
-- [x] Skill definition with fluid roles
-- [x] Role switching protocol
-- [x] Peer-to-peer conflict resolution
-- [x] Documentation (SKILL.md, README.md)
-
-### Phase 3: Critical Moderation (🚧 In Progress)
-- [ ] Duplicate detection (80% similarity)
-- [ ] Loop suppression (conversation patterns)
-- [ ] **Action Loop Detection** (repeated commands like `ping`, `curl`)
-- [ ] Configurable cooldown periods
-- [ ] Moderation analytics
-
-**Note**: Action Loop Detection is **critical infrastructure protection**, not optional. Must be implemented before production use.
-
-### Phase 4: Emergent Behavior Analysis (🔮 Future)
-- [ ] Role specialization detection
-- [ ] Review network mapping
-- [ ] Conflict resolution pattern analysis
-- [ ] Performance metrics (time-to-merge, review cycles)
-
-### Phase 5: Advanced Features (🔮 Future)
-- [ ] Automatic role suggestion (based on agent history)
-- [ ] Smart reservation hints (suggest paths based on task)
-- [ ] Review quality scoring
-- [ ] Team dynamics dashboard
-
----
-
-## 10. Success Criteria
-
-### 10.1 System-Level Success
+### 9.1 System-Level Success
 
 | Metric | Target | Alert Threshold | Measurement |
 |--------|--------|-----------------|-------------|
@@ -601,7 +760,7 @@ To ensure safe operation and enable debugging, the following features are **requ
 | **Adaptability** | System adjusts to priority changes | Priority changes cause delays | Measure response to priority shift |
 | **Emergence** | New beneficial patterns emerge | No pattern evolution over time | Analyze feed for new behaviors |
 
-### 10.2 Agent-Level Success
+### 9.2 Agent-Level Success
 
 | Metric | Target | Alert Threshold | Measurement |
 |--------|--------|-----------------|-------------|
@@ -610,7 +769,7 @@ To ensure safe operation and enable debugging, the following features are **requ
 | **Quality** | Code quality improves through peer review | Review feedback decreases | Review comment trends |
 | **Learning** | Agents learn from each other | Repeated same mistakes | Error pattern analysis |
 
-### 10.3 Human-Level Success
+### 9.3 Human-Level Success
 
 | Metric | Target | Alert Threshold | Measurement |
 |--------|--------|-----------------|-------------|
@@ -619,7 +778,7 @@ To ensure safe operation and enable debugging, the following features are **requ
 | **Insight** | Humans learn from emergent patterns | No pattern insights | Pattern documentation |
 | **Trust** | Humans trust the system to handle coordination | Frequent human intervention | Intervention frequency |
 
-### 10.4 Success Definition
+### 9.4 Success Definition
 
 **The system is successful when**:
 1. Agents coordinate without human intervention for 90%+ of tasks
@@ -637,9 +796,9 @@ To ensure safe operation and enable debugging, the following features are **requ
 
 ---
 
-## 11. System Limitations
+## 10. System Limitations
 
-### 11.1 What This System Cannot Do
+### 10.1 What This System Cannot Do
 
 - **Replace human judgment**: Complex architectural decisions still require human input
 - **Prevent all conflicts**: Conflicts are natural; the system helps resolve them, not prevent them
@@ -649,7 +808,7 @@ To ensure safe operation and enable debugging, the following features are **requ
 - **Force collaboration**: Agents must be willing to participate; system cannot force cooperation
 - **Understand business context**: System coordinates technical work, not business priorities
 
-### 11.2 When This System Should NOT Be Used
+### 10.2 When This System Should NOT Be Used
 
 | Scenario | Reason |
 |----------|--------|
@@ -660,7 +819,7 @@ To ensure safe operation and enable debugging, the following features are **requ
 | **Crisis mode** | When rapid, centralized decision-making is needed |
 | **First-time users** | Agents unfamiliar with the system; require training first |
 
-### 11.3 Known Trade-offs
+### 10.3 Known Trade-offs
 
 | Trade-off | Description |
 |-----------|-------------|
@@ -672,7 +831,7 @@ To ensure safe operation and enable debugging, the following features are **requ
 | **Tribal knowledge risk** | Patterns may emerge that are not documented or shared |
 | **Moderation necessity** | Action Loop Detection is mandatory; disabling it risks system collapse |
 
-### 11.4 Mitigation Strategies
+### 10.4 Mitigation Strategies
 
 | Limitation | Mitigation |
 |------------|------------|
@@ -686,45 +845,43 @@ To ensure safe operation and enable debugging, the following features are **requ
 
 ---
 
-## 12. Verification Strategy
+## 11. Security Considerations
 
-### 12.1 Unit Tests
+### 11.1 Threat Model
 
-- **Rule enforcement**: Verify `mesh_reserve` blocks conflicting edits
-- **Moderation rules**: Test self-reply filter, cooldown, duplicate detection
-- **State transitions**: Validate role switching protocol
-- **Message delivery**: Ensure `mesh_send` delivers to correct inbox
+**The system assumes**:
+- Agents are **well-intentioned but fallible** (not malicious)
+- Agents may make mistakes, get stuck, or behave suboptimally
+- Agents may accidentally create conflicts or loops
 
-### 12.2 Integration Tests
+**The system does NOT assume**:
+- Malicious agents attempting to disrupt the system
+- Deliberate reservation hoarding for denial-of-service
+- Intentional message flooding or spam
 
-- **Multi-agent workflows**: 2-3 agents completing features with reviews
-- **Conflict scenarios**: Reservation conflicts, review disagreements
-- **Failure scenarios**: Agent crashes, stale reservations
-- **Role switching**: Agents switching between Builder/Validator roles
+### 11.2 Existing Protections
 
-### 12.3 Load Tests
+| Threat | Mitigation |
+|--------|------------|
+| **Accidental loops** | Action Loop Detection blocks repeated commands |
+| **Accidental flooding** | Cooldown and duplicate detection limit message rate |
+| **Accidental conflicts** | Reservation system prevents simultaneous edits |
+| **Stale reservations** | Peer visibility and alerts encourage release |
 
-- **Agent scaling**: 5, 10, 20 agents coordinating simultaneously
-- **Message volume**: High message throughput without degradation
-- **Reservation concurrency**: Multiple simultaneous reservations
-- **Feed performance**: Large event logs without slowdown
+### 11.3 Unaddressed Risks (Future Work)
 
-### 12.4 Chaos Engineering
+| Risk | Current Status | Future Mitigation |
+|------|----------------|-------------------|
+| **Malicious reservation hoarding** | Not addressed | Rate limiting per agent; expiration policies |
+| **Message spam attacks** | Partial (cooldown) | Message quotas; reputation systems |
+| **Information leakage** | Not addressed | Access controls on `mesh_peers` data |
+| **Sybil attacks** (fake agents) | Not addressed | Agent authentication; identity verification |
 
-- **Agent failure**: Kill agents mid-task; verify recovery
-- **Network partition**: Simulate message delays/loss
-- **Reservation hoarding**: Agent holds reservation indefinitely; verify peer response
-- **Conversation loops**: Force loop scenario; verify moderation blocks
-
-### 12.5 Human-in-the-Loop Tests
-
-- **Intervention scenarios**: Human breaks deadlock; verify process
-- **Priority changes**: Human changes priorities; verify adaptation
-- **Conflict escalation**: Human arbitrates; verify resolution
+**Note**: This system prioritizes **usability and autonomy** over **security hardening**. In a trusted environment (local development, small team), this is acceptable. For untrusted environments, additional security layers are required.
 
 ---
 
-## 13. Comparison with Traditional Approaches
+## 12. Comparison with Traditional Approaches
 
 | Aspect | Traditional (Coordinator-based) | Chaos Pattern (This System) |
 |--------|--------------------------------|----------------------------|
@@ -742,7 +899,7 @@ To ensure safe operation and enable debugging, the following features are **requ
 
 ---
 
-## 14. Open Questions & Research Areas
+## 13. Open Questions & Research Areas
 
 1. **Optimal Cooldown Period**: Is 2 seconds the right balance between responsiveness and noise?
 2. **Duplicate Threshold**: Is 80% similarity the right threshold for blocking duplicates?
@@ -752,10 +909,12 @@ To ensure safe operation and enable debugging, the following features are **requ
 6. **Dunbar's Number**: What is the practical limit for peer-to-peer coordination? (10 agents? 20?)
 7. **Pattern Detection**: Can we automatically detect beneficial vs. harmful emergent patterns?
 8. **Trust Metrics**: How do we quantify "trust" between agents?
+9. **Security Hardening**: How to protect against malicious agents without sacrificing autonomy?
+10. **Moderation Tuning**: What is the right balance between strictness and flexibility?
 
 ---
 
-## 15. Conclusion
+## 14. Conclusion
 
 **pi-mesh-chaospattern** is not just a coordination tool—it's an experiment in **self-organizing multi-agent systems**.
 
@@ -782,47 +941,3 @@ This is a philosophical choice as much as a technical one. We choose:
 
 *This document is a living specification. It evolves as the system evolves.*
 *Last updated: 2026-04-21*
-
----
-
-## 10. Comparison with Traditional Approaches
-
-| Aspect | Traditional (Coordinator-based) | Chaos Pattern (This System) |
-|--------|--------------------------------|----------------------------|
-| **Role Assignment** | Coordinator assigns | Agents self-select |
-| **Conflict Resolution** | Coordinator mediates | Peer-to-peer negotiation |
-| **Failure Handling** | Coordinator reassigns | Peers adapt naturally |
-| **Scalability** | Coordinator bottleneck | No central bottleneck |
-| **Emergent Behavior** | Limited (predictable) | High (adaptive) |
-| **Complexity** | Medium (hierarchy) | Low (flat, simple rules) |
-| **Resilience** | Low (SPOF) | High (no SPOF) |
-
----
-
-## 11. Open Questions & Research Areas
-
-1. **Optimal Cooldown Period**: Is 2 seconds the right balance between responsiveness and noise?
-2. **Duplicate Threshold**: Is 80% similarity the right threshold for blocking duplicates?
-3. **Role Specialization**: Should we encourage agents to specialize, or keep roles truly fluid?
-4. **Review Quality**: How do we measure and improve review quality without a Coordinator?
-5. **Human Escalation**: When should the system escalate to human vs. letting agents resolve?
-
----
-
-## 12. Conclusion
-
-**pi-mesh-chaospattern** is not just a coordination tool—it's an experiment in **self-organizing multi-agent systems**.
-
-By removing the Coordinator and embracing **fluid roles**, we trade initial coordination overhead for:
-- **Resilience**: No single point of failure
-- **Adaptability**: Agents respond dynamically to changing conditions
-- **Emergence**: Complex behavior from simple rules
-- **Scalability**: No central bottleneck
-
-The system is designed to be **robust in chaos**, where traditional systems would break under the weight of their own rigidity.
-
-**The question is not whether agents can coordinate, but whether they can self-organize into something greater than the sum of their parts.**
-
----
-
-*This document is a living specification. It evolves as the system evolves.*

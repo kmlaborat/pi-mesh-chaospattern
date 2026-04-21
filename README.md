@@ -6,7 +6,7 @@ Coordinate multiple [Pi](https://github.com/badlogic/pi-mono) agents working in 
 
 **New feature:** **Chaos Pattern** - Autonomous agent-to-agent communication with built-in moderation to prevent runaway conversations.
 
-**Philosophy:** **Fluid Roles** - No fixed Coordinator. Agents self-organize as Builder or Validator based on context.
+**Philosophy:** **Fluid Roles + Builder-Validator Chain** - No fixed Coordinator. Agents self-organize as Builder or Validator, collaborating through a two-phase process: Plan Approval (before implementation) and Code Review (after implementation).
 
 No daemon, no server. Just files on disk.
 
@@ -82,9 +82,8 @@ The **Chaos Pattern** enables agents to respond to each other's messages automat
   - Cooldown period after detection (default: 10 seconds)
 
 Configure via `chaosMode`:
-- `"strict"`: All rules enabled (default) - **Recommended for production**
-- `"relaxed"`: Conversation rules only (no Action Loop Detection) - **NOT RECOMMENDED**
-- `"off"`: Disable all moderation (agents chat freely) - **DANGEROUS**
+- `"strict"` (default): **All rules enabled** - Conversation moderation + Action Loop Detection. **Recommended for production**.
+- `"off"`: **Conversation moderation disabled** (free chat) but **Action Loop Detection still active**. Action Loop Detection is a **system-level safety mechanism** that cannot be disabled—it protects against infinite command loops that could crash machines or overwhelm networks.
 
 Advanced configuration (`.pi/pi-mesh.json`):
 ```json
@@ -95,6 +94,8 @@ Advanced configuration (`.pi/pi-mesh.json`):
   "actionLoopCooldownSeconds": 10
 }
 ```
+
+**Note**: `actionLoop*` settings are **always enforced**, even when `chaosMode: "off"`. They are safety requirements, not optional features.
 ## Quick example
 
 ```typescript
@@ -248,25 +249,53 @@ This project includes a project-local skill for enhanced agent coordination:
 
 ### mesh-coordination Skill
 
-Defines rules, **fluid roles**, and self-organizing workflows for multi-agent coordination:
+Defines rules, **fluid roles**, and **Builder-Validator Chain** workflows for multi-agent coordination:
 
-- **Fluid Roles (Chaos Pattern Mode)**: 
-  - **No fixed roles** - Agents dynamically assume Builder or Validator based on context
-  - **When implementing** → Act as Builder (reserve files, write tests, report completion)
-  - **When reviewing** → Act as Validator (read code, provide feedback, approve/reject)
-  - **Role switching** → Announce via `mesh_send` before acting
-  - **Self-organization** → No Coordinator needed; agents resolve conflicts directly
-- **Core Rules**: 
-  - Plan sharing via `mesh_send` before editing
-  - **File reservation mandatory** before any `edit`/`write`
-  - Immediate release after completion
-  - @mentions, progress updates, peer review
-- **Workflow**: Plan → Check Reservations → Reserve → Implement → Release → Peer Review → Fixes → Approval → Merge
-- **Edge Case Handling**: 
-  - Reservation conflict resolution (5-step flow)
-  - Release failure handling (4-step procedure)
-  - Interruption/abortion procedure (4-step)
-- **Code Review**: Any agent can review; no fixed Validator role
+#### Fluid Roles
+- **No fixed roles** - Agents dynamically assume Builder or Validator based on context
+- **When implementing** → Act as Builder (reserve files, write tests, report completion)
+- **When reviewing** → Act as Validator (read code, provide feedback, approve/reject)
+- **Role switching** → Announce via `mesh_send` before acting
+- **Self-organization** → No Coordinator needed; agents resolve conflicts directly
+
+#### Builder-Validator Chain (Two-Phase Collaboration)
+
+**Phase 1: Plan Approval (Before Implementation)**
+1. Builder announces plan via `mesh_send`
+2. Builder requests Validator: "@agent-name Can you review this plan?"
+3. **Wait for explicit approval** before reserving files or implementing
+4. ONLY AFTER approval: Reserve → Implement
+
+**Phase 2: Code Review (After Implementation)**
+1. Builder reports completion with git SHA: "Implementation complete. Ready for review. @agent-name"
+2. Validator reviews code using `read` tool
+3. Validator provides structured feedback
+4. **If feedback indicates flaws**: Builder modifies and re-submits (autonomous loop)
+5. ONLY AFTER Validator approval: Merge allowed
+
+**Key Principles**:
+- **Role Separation**: Builder and Validator have **different system prompts**. Validator is "critical and strict" to provide genuine oversight.
+- **Context Sharing**: The "Approved Plan" from Phase 1 is passed to Builder as a **constraint** during implementation.
+- **Autonomous Loop**: Builder loops until Validator explicitly says "LGTM" or "Approved". No human intervention needed.
+
+#### Core Rules
+- **Plan Approval mandatory** before implementation
+- **File reservation mandatory** before any `edit`/`write`
+- **Immediate release** after completion
+- **Code Review mandatory** before merge
+- @mentions, progress updates, peer monitoring
+
+#### Workflow
+**Phase 1**: Announce Plan → Request Validator → Get Approval → Check Reservations → Reserve Files
+
+**Phase 2**: Implement → Release Reservations → Report Completion
+
+**Phase 3**: Peer Review → Fixes (if needed) → Approval → Merge
+
+#### Edge Case Handling
+- Reservation conflict resolution (5-step flow)
+- Release failure handling (4-step procedure)
+- Interruption/abortion procedure (4-step)
 
 See `skills/mesh-coordination/SKILL.md` for details.
 
@@ -294,7 +323,7 @@ This is especially valuable when:
 
 **Original pi-mesh:** Created by [Rohan Verma](https://github.com/rhnvrm). Inspired by [pi-messenger](https://github.com/nicobailon/pi-messenger) by Nico Bailon.
 
-**Chaos Pattern fork:** Added by [kmlaborat](https://github.com/kmlaborat). Based on the [agents-chatter](https://github.com/RAG4J/agents-chatter) project by Jettro Coenradie.
+**Chaos Pattern moderation:** Based on the [agents-chatter](https://github.com/RAG4J/agents-chatter) project by Jettro Coenradie. Adapted and extended for the pi-mesh ecosystem with infrastructure protection (Action Loop Detection) and fluid role coordination.
 
 **Multi-agent coordination skills:** Designed for agent-to-agent conversation facilitation.
 

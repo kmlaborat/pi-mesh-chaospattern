@@ -119,7 +119,7 @@ export function loadConfig(cwd: string): MeshConfig {
     stuckThreshold: typeof merged.stuckThreshold === "number" ? merged.stuckThreshold : DEFAULT_CONFIG.stuckThreshold,
     autoStatus: merged.autoStatus !== false,
     hooksModule: typeof merged.hooksModule === "string" ? merged.hooksModule : undefined,
-    chaosMode: (merged.chaosMode as "strict" | "relaxed" | "off") ?? "strict",
+    chaosMode: (merged.chaosMode as "strict" | "off") ?? "strict",
   };
 }
 

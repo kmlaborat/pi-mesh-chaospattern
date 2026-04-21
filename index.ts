@@ -743,19 +743,18 @@ export default function piMeshExtension(pi: ExtensionAPI) {
       await hooks.onRegistered?.(state, ctx, buildHookActions(ctx));
       await startHooksPollTimer(ctx);
 
-      // Initialize ModerationService if chaos mode is enabled
-      if (config.chaosMode !== "off") {
-        moderator = new ModerationService({
-          cooldownMs: 2000,
-          duplicateWindowSize: 10,
-          duplicateThreshold: 0.8,
-          loopWindowSize: 5,
-          maxDepth: 2,
-          actionLoopThreshold: config.actionLoopThreshold ?? 3,
-          actionLoopWindow: config.actionLoopWindow ?? 5,
-          actionLoopCooldownSeconds: config.actionLoopCooldownSeconds ?? 10,
-        });
-      }
+      // Initialize ModerationService
+      // In "off" mode, conversation rules are disabled but Action Loop Detection remains active.
+      moderator = new ModerationService({
+        cooldownMs: config.chaosMode === "off" ? 0 : 2000,
+        duplicateWindowSize: config.chaosMode === "off" ? 0 : 10,
+        duplicateThreshold: config.chaosMode === "off" ? 1.0 : 0.8,
+        loopWindowSize: config.chaosMode === "off" ? 0 : 5,
+        maxDepth: config.chaosMode === "off" ? 999 : 2,
+        actionLoopThreshold: config.actionLoopThreshold ?? 3,
+        actionLoopWindow: config.actionLoopWindow ?? 5,
+        actionLoopCooldownSeconds: config.actionLoopCooldownSeconds ?? 10,
+      });
 
       // Inject context message so the LLM knows its mesh identity
       if (config.contextMode !== "none") {
@@ -789,7 +788,8 @@ export default function piMeshExtension(pi: ExtensionAPI) {
 
     // 1. Action Loop Detection (runs BEFORE all other checks)
     // CRITICAL: Protects infrastructure from runaway command loops
-    if (state.registered && toolName === "bash" && moderator && config.chaosMode !== "off") {
+    // NOTE: Action Loop Detection is ALWAYS active, even in "off" mode. It is a safety requirement, not a configurable feature.
+    if (state.registered && toolName === "bash" && moderator) {
       const command = (input.command as string) || (input.args as string) || "";
       if (command) {
         // Parse command and args

@@ -16,12 +16,14 @@ metadata:
 **No fixed roles.** Agents dynamically assume **Builder** or **Validator** roles based on context:
 
 1. **When implementing** → Act as **Builder**:
+   - Announce plan and request Validator approval (Phase 1)
    - Reserve files before editing
    - Write tests
-   - Report completion with SHA
+   - Report completion with SHA (Phase 2)
 
 2. **When reviewing** → Act as **Validator**:
-   - Read code with `read` tool
+   - Respond to Builder's plan request (Phase 1)
+   - Read code with `read` tool (Phase 2)
    - Provide structured feedback
    - Approve or request fixes
 
@@ -40,14 +42,31 @@ metadata:
 
 **Key principle**: Roles are **temporary states**, not fixed identities. This enables self-organizing resilience without central coordination.
 
+**Critical**: Builder and Validator must **explicitly coordinate** for both Phase 1 (Plan Approval) and Phase 2 (Code Review). No assumptions, no silent reviews.
+
 ## Must-Follow Rules
-1. **Before starting work**: Always share your plan with others via `mesh_send` and **wait for explicit approval** before implementing.
-   - ❌ Forbidden: Call `edit` or `write` without sharing first.
-   - ❌ Forbidden: Start implementation before receiving a reply.
-   - ✅ Required flow:
-     1. Send plan: `mesh_send({ to: "@agent-2", message: "I will implement X by doing Y. Please approve." })`
-     2. Wait for reply with approval or feedback
-     3. Only after approval: Start implementation
+1. **Builder-Validator Chain (Two-Phase Collaboration)**:
+   
+   **Phase 1: Plan Approval (Before Implementation)**
+   - BEFORE starting implementation, Builder MUST:
+     1. Announce intent via `mesh_send`: "I will implement [feature] by doing [plan]."
+     2. Request a Validator: "@agent-name Can you review this plan as Validator?"
+     3. **Wait for explicit approval** before reserving files or implementing.
+     - ❌ Forbidden: Start implementation without Validator approval.
+     - ❌ Forbidden: Assume someone will review later without confirming.
+     - ✅ Required: Get approval → Reserve files → Implement.
+   
+   **Phase 2: Code Review (After Implementation)**
+   - AFTER implementation complete, Builder MUST:
+     1. Report completion with git SHA: "Implementation complete. Ready for review. @agent-name"
+     2. Wait for Validator to review and approve.
+   - Validator MUST:
+     1. Review code using `read` tool.
+     2. Provide structured feedback via `mesh_send`.
+     3. Approve or request fixes before merge.
+   - ❌ Forbidden: Merge without Validator approval.
+   - ✅ Required: Review → Feedback → Fix (if needed) → Approve → Merge.
+
 2. **Reply requirement**: When you receive a message, **always reply** before starting any work.
    - Messages are delivered to your inbox (`.pi/mesh/inbox/<your-name>/`)
    - Check `mesh_peers` to see who's active and what they're doing
@@ -133,16 +152,24 @@ If work is interrupted, cancelled, or fails mid-task:
 3. **Document the interruption** reason for future reference
 4. **If resuming later**: Start from Plan Sharing step (rule 1)
 
-## Workflow
-1. **Plan**: Present plan to others → Get approval
-2. **Check Reservations**: Use `mesh_peers` to check current reservations
-3. **Reserve Files**: Reserve specific files/directories with `mesh_reserve` BEFORE editing
-4. **Implement**: Start work (as Builder) with reservations active
-5. **Release Reservations**: Release ALL reservations immediately after editing complete
-6. **Completion Report**: Implementer reports completion with git SHA
-7. **Peer Review**: Another agent reviews code → Provides feedback
-8. **Fixes**: Implementer fixes issues (if any) - repeat reserve/edit/release cycle
-9. **Approval**: Reviewer approves → Merge
+## Workflow (Builder-Validator Chain)
+
+### Phase 1: Plan Approval
+1. **Announce Plan**: Builder presents plan via `mesh_send` to potential Validator.
+2. **Request Validator**: "@agent-name Can you review this plan as Validator?"
+3. **Get Approval**: Wait for explicit approval from Validator.
+4. **Check Reservations**: Use `mesh_peers` to check current reservations.
+5. **Reserve Files**: Reserve specific files/directories with `mesh_reserve` BEFORE editing.
+
+### Phase 2: Implementation
+6. **Implement**: Start work (as Builder) with reservations active.
+7. **Release Reservations**: Release ALL reservations immediately after editing complete.
+8. **Completion Report**: Implementer reports completion with git SHA: "Implementation complete. Ready for review. @agent-name"
+
+### Phase 3: Code Review
+9. **Peer Review**: Validator reviews code using `read` tool → Provides feedback.
+10. **Fixes** (if needed): Implementer fixes issues - repeat reserve/edit/release cycle.
+11. **Approval**: Reviewer approves → Merge allowed.
 
 Refer to `references/workflows.md` for detailed workflows.
 
