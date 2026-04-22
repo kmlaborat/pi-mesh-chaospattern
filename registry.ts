@@ -214,7 +214,8 @@ export function register(
     gitBranch,
     isHuman: state.isHuman,
     session: { ...state.session },
-    activity: { lastActivityAt: now },
+    activity: { lastActivityAt: now, cognitiveState: "idle" },
+    cognitiveState: "idle",
   };
 
   try {
@@ -337,6 +338,7 @@ export function getAllAgents(state: MeshState, dirs: Dirs): AgentRegistration[] 
     activity: { ...state.activity },
     reservations: state.reservations.length > 0 ? state.reservations : undefined,
     statusMessage: state.statusMessage,
+    cognitiveState: state.cognitiveState,
   };
   return [self, ...peers];
 }
@@ -366,6 +368,7 @@ export function updateRegistration(
     reg.session = { ...state.session };
     reg.activity = { ...state.activity };
     reg.statusMessage = state.statusMessage;
+    reg.cognitiveState = state.cognitiveState;
     fs.writeFileSync(regPath, JSON.stringify(reg, null, 2));
   } catch {
     // Ignore
@@ -391,6 +394,7 @@ export function flushActivityToRegistry(
     reg.session = { ...state.session };
     reg.activity = { ...state.activity };
     reg.statusMessage = state.statusMessage;
+    reg.cognitiveState = state.cognitiveState;
     fs.writeFileSync(regPath, JSON.stringify(reg, null, 2));
   } catch {
     // Ignore
@@ -451,8 +455,9 @@ export function renameAgent(
     gitBranch: state.gitBranch,
     isHuman: state.isHuman,
     session: { ...state.session },
-    activity: { lastActivityAt: now },
+    activity: { lastActivityAt: now, cognitiveState: state.cognitiveState },
     statusMessage: state.statusMessage,
+    cognitiveState: state.cognitiveState,
   };
 
   try {

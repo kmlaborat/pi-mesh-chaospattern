@@ -11,6 +11,47 @@ metadata:
 
 # Mesh Coordination Skill
 
+## Cognitive States (Self-Declaration)
+
+Agents should **explicitly declare their cognitive state** to help peers understand their intent and context. This enables "reading the room" and appropriate coordination without central control.
+
+**Available States**:
+- `discussing` - Actively proposing or debating ideas
+- `agreed` - Have agreed to a proposal/plan  
+- `objecting` - Raising objections or concerns
+- `waiting_consensus` - Waiting for others to reach consensus
+- `finalizing` - Documenting or finalizing decisions
+- `implementing` - Actively implementing code
+- `reviewing` - Reviewing code or decisions
+- `idle` - No current focus
+- `blocked` - Blocked waiting on something
+
+**How to Set**:
+```bash
+# Set state
+mesh_manage({ action: "set_cognitive_state", cognitiveState: "implementing" })
+
+# Clear state (return to auto-detection)
+mesh_manage({ action: "set_cognitive_state" })
+```
+
+**Why Declare State?**
+- **Self-interest**: Peers will send you appropriate messages (not interrupting when implementing)
+- **Coordination**: Others can see who's reviewing, who's waiting, who's available
+- **Context**: The collective states of all agents naturally show what "phase" the team is in
+
+**Example Workflow**:
+1. Start discussion: `set_cognitive_state("discussing")` → Broadcast proposal
+2. After agreeing: `set_cognitive_state("agreed")` → Others see consensus forming
+3. Start implementation: `set_cognitive_state("implementing")` → Reserve files, begin work
+4. Ready for review (as Builder): `set_cognitive_state("waiting_consensus")` → Broadcast completion
+5. Reviewing (as Validator): `set_cognitive_state("reviewing")` → Read and provide feedback
+6. Done: `set_cognitive_state("idle")` → Release reservations
+
+**Key Principle**: State declaration is **self-serving** - it helps YOU get the right messages at the right time, not just "being polite."
+
+---
+
 ## Fluid Roles (Chaos Pattern Mode)
 
 **No fixed roles.** Agents dynamically assume **Builder** or **Validator** roles based on context:
@@ -44,6 +85,40 @@ metadata:
 
 **Critical**: Builder and Validator must **explicitly coordinate** for both Phase 1 (Plan Approval) and Phase 2 (Code Review). No assumptions, no silent reviews.
 
+---
+
+## Broadcasting vs. Mentions (Context Formation)
+
+**Mentions** (`@agent-name`): Direct requests to specific agents (purpose-driven, individual)
+- "@builder-1 Please review this code"
+- "@validator-2 I need help with X"
+
+**Broadcasts** (no `to` parameter): Declare your state/intent to the whole room (context-forming, collective)
+- "📢 Starting implementation of feature X - I'll be in 'implementing' state"
+- "📢 Ready for review - switching to 'reviewing' state"
+- "📢 Consensus request: Should we use approach A or B?"
+
+**Why Broadcast Matters**:
+- Creates **shared context** - everyone knows what's happening
+- Enables **passive coordination** - agents can act appropriately without being told
+- Reduces **unnecessary interrupts** - peers know when you're busy
+- Builds **situational awareness** - you see the team's collective state
+
+**When to Use Each**:
+- Use **broadcasts** for: state changes, consensus requests, progress updates, context setting
+- Use **mentions** for: specific requests, direct questions, targeted follow-ups
+
+**Example**:
+```bash
+# Broadcast - declare intent to all
+mesh_send({ broadcast: true, message: "📢 Starting implementation - state: implementing" })
+
+# Later - specific request to reviewer
+mesh_send({ to: "validator-1", message: "@validator-1 Ready for review when you're free" })
+```
+
+---
+
 ## Must-Follow Rules
 1. **Consensus Pattern (Universal Agreement Process)**:
    
@@ -57,8 +132,20 @@ metadata:
    
    **Process**:
    
+   **Cognitive State Transitions**:
+   
+   Use `mesh_manage({ action: "set_cognitive_state", cognitiveState: "<state>" })` to declare your state.
+   
+   | Phase | Proposer State | Respondent State |
+   |-------|---------------|------------------|
+   | Proposal | `discussing` | `waiting_consensus` |
+   | Agreement | `agreed` | `agreed` |
+   | Declaration | `implementing` or `idle` | - |
+   
    **Step 1: Proposal Broadcast**:
-   - Proposer MUST use `mesh_send` with **broadcast** (no specific `to` parameter):
+   - Proposer MUST:
+     1. Set cognitive state: `mesh_manage({ action: "set_cognitive_state", cognitiveState: "discussing" })`
+     2. Use `mesh_send` with **broadcast** (no specific `to` parameter):
      ```
      📢 [Consensus Request]
      Subject: [Decision Title]
@@ -78,7 +165,9 @@ metadata:
      ```
    
    **Step 2: Response Phase**:
-   - Each agent MUST reply **exactly once** (no repeated responses)
+   - Each agent MUST:
+     1. Set cognitive state: `mesh_manage({ action: "set_cognitive_state", cognitiveState: "waiting_consensus" })`
+     2. Reply **exactly once** (no repeated responses)
    - Response types:
      - ✅ **Agree**: "@proposer-name Agree"
      - ❌ **Oppose**: "@proposer-name Oppose: [specific reason]"
@@ -86,7 +175,9 @@ metadata:
      - ⏳ **Hold**: "@proposer-name Hold: [additional info needed]"
    
    **Step 3: Tally and Decision**:
-   - **Unanimous Agree**: All agents reply "Agree" → Proposer broadcasts "🎉 Consensus reached. Proceeding with this approach."
+   - **Unanimous Agree**: All agents reply "Agree" → Proposer:
+     1. Broadcasts: "🎉 Consensus reached. Proceeding with this approach."
+     2. Sets state: `mesh_manage({ action: "set_cognitive_state", cognitiveState: "agreed" })`
    - **Modifications Proposed**: Proposer integrates amendments and re-requests consensus (max 2 rounds)
    - **Opposition**: Return to discussion phase, or decide by majority vote
    - **Hold Responses**: Provide additional info, then re-request consensus
@@ -95,6 +186,7 @@ metadata:
    **Step 4: Final Declaration**:
    - Consensus reached: "🎉 [Subject] consensus completed. Proceeding with this approach."
    - Consensus failed: "⚠️ [Subject] consensus not reached. Exploring alternatives."
+   - After declaration, set state: `mesh_manage({ action: "set_cognitive_state", cognitiveState: "implementing" })` or `"idle"`
    
    **Critical Rules**:
    - ✅ **Broadcast Required**: Consensus requests MUST be broadcast (no individual `to` parameter)
@@ -109,7 +201,8 @@ metadata:
    
    **Phase 1: Plan Approval (Before Implementation)**
    - BEFORE starting implementation, Builder MUST:
-     1. Announce intent and proposal via `mesh_send` (broadcast):
+     1. Set state: `mesh_manage({ action: "set_cognitive_state", cognitiveState: "discussing" })` (see Consensus Pattern state table)
+     2. Announce intent and proposal via `mesh_send` (broadcast):
         ```
         📢 [Consensus Request]
         Subject: Implementation Plan for [feature]
@@ -123,20 +216,22 @@ metadata:
         All agents, can you agree to this plan?
         Reply with "@builder-name Agree" if you agree.
         ```
-     2. **Use Consensus Pattern** to gather approval from all agents.
-     3. **Wait for consensus** before reserving files or implementing.
+     3. **Use Consensus Pattern** to gather approval from all agents.
+     4. **Wait for consensus** before reserving files or implementing.
      - ❌ Forbidden: Start implementation without consensus approval.
      - ❌ Forbidden: Use individual @name checks for plan approval.
      - ✅ Required: Get consensus → Reserve files → Implement.
    
    **Phase 2: Code Review (After Implementation)**
    - AFTER implementation complete, Builder MUST:
-     1. Report completion with git SHA: "Implementation complete. Ready for review."
-     2. Wait for Validator to review and provide feedback.
+     1. Set state: `mesh_manage({ action: "set_cognitive_state", cognitiveState: "waiting_consensus" })` (see Consensus Pattern state table)
+     2. Report completion with git SHA: "Implementation complete. Ready for review."
+     3. Wait for Validator to review and provide feedback.
    - Validator MUST:
-     1. Review code using `read` tool.
-     2. Provide structured feedback via `mesh_send`.
-     3. If issues found, request fixes.
+     1. Set state: `mesh_manage({ action: "set_cognitive_state", cognitiveState: "reviewing" })` (see Consensus Pattern state table)
+     2. Review code using `read` tool.
+     3. Provide structured feedback via `mesh_send`.
+     4. If issues found, request fixes.
    - **Phase 3: Final Consensus**:
      - After all fixes complete, **use Consensus Pattern** for final approval:
        ```
@@ -185,8 +280,9 @@ metadata:
 
 ## Pre-Work Checklist (Builder)
 Before starting any implementation:
-- [ ] Plan shared via `mesh_send` and approved
-- [ ] Checked `mesh_peers` for current reservations
+- [ ] Set cognitive state: `mesh_manage({ action: "set_cognitive_state", cognitiveState: "discussing" })` (see Consensus Pattern state table)
+- [ ] Plan shared via `mesh_send` (broadcast) and approved
+- [ ] Checked `mesh_peers` for current reservations and cognitive states
 - [ ] Reserved files with `mesh_reserve` (specific paths only)
 - [ ] Received confirmation that no conflicts exist
 
@@ -194,8 +290,9 @@ Before starting any implementation:
 After completing implementation:
 - [ ] All tests passing
 - [ ] Reservations released with `mesh_release`
-- [ ] Completion report sent via `mesh_send`
+- [ ] Completion report sent via `mesh_send` (broadcast)
 - [ ] Git commit created with SHA recorded
+- [ ] Set cognitive state: `mesh_manage({ action: "set_cognitive_state", cognitiveState: "idle" })` or `"waiting_consensus"` (see Consensus Pattern state table)
 
 ## Peer Monitoring (Self-Organization)
 - All agents periodically check `mesh_peers` to monitor reservation status

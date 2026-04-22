@@ -44,6 +44,7 @@ export interface AgentActivity {
   lastActivityAt: string;
   currentActivity?: string;
   lastToolCall?: string;
+  cognitiveState?: CognitiveState;
 }
 
 export interface AgentRegistration {
@@ -60,6 +61,7 @@ export interface AgentRegistration {
   session: AgentSession;
   activity: AgentActivity;
   statusMessage?: string;
+  cognitiveState?: CognitiveState;
 }
 
 // =============================================================================
@@ -90,7 +92,8 @@ export type FeedEventType =
   | "test"
   | "edit"
   | "stuck"
-  | "moderated";
+  | "moderated"
+  | "action_blocked";
 
 export interface FeedEvent {
   ts: string;
@@ -104,7 +107,53 @@ export interface FeedEvent {
 // State
 // =============================================================================
 
+/**
+ * System status - computed from activity and reservations.
+ */
 export type AgentStatus = "active" | "idle" | "away" | "stuck";
+
+/**
+ * Cognitive state - explicit agent self-identification of current intent/focus.
+ * Used for coordination and context sharing in chaos pattern.
+ * 
+ * Standard states: discussing, agreed, objecting, waiting_consensus,
+ * finalizing, implementing, reviewing, idle, blocked
+ * 
+ * Custom states are allowed for extensibility (e.g., "testing", "deploying").
+ */
+export type CognitiveState =
+  | "discussing"     // Proposing or debating ideas
+  | "agreed"         // Agreed to a proposal/plan
+  | "objecting"      // Raising objections or concerns
+  | "waiting_consensus" // Waiting for others to reach consensus
+  | "finalizing"     // Documenting or finalizing decisions
+  | "implementing"   // Actively implementing
+  | "reviewing"      // Reviewing code or decisions
+  | "idle"           // No current focus
+  | "blocked"        // Blocked waiting on something
+  | string;          // Allow custom states for extensibility
+
+/** Standard cognitive state values for reference and validation. */
+export const STANDARD_COGNITIVE_STATES: CognitiveState[] = [
+  "discussing",
+  "agreed",
+  "objecting",
+  "waiting_consensus",
+  "finalizing",
+  "implementing",
+  "reviewing",
+  "idle",
+  "blocked",
+];
+
+/**
+ * Validate if a string is a valid cognitive state.
+ * Returns true for standard states or any non-empty custom state.
+ */
+export function isValidCognitiveState(state: string): boolean {
+  const trimmed = state.trim().toLowerCase();
+  return STANDARD_COGNITIVE_STATES.some(s => s.toLowerCase() === trimmed) || trimmed.length > 0;
+}
 
 export interface ComputedStatus {
   status: AgentStatus;
@@ -135,6 +184,7 @@ export interface MeshState {
   session: AgentSession;
   activity: AgentActivity;
   statusMessage?: string;
+  cognitiveState?: CognitiveState;
   customStatus: boolean;
   registryFlushTimer: ReturnType<typeof setTimeout> | null;
   sessionStartedAt: string;

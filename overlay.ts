@@ -375,4 +375,9 @@ export class MeshOverlay implements Component {
     this.chatTarget = "@all";
     this.tui.requestRender();
   }
+
+  invalidate(): void {
+    // Component interface requirement - no-op for now
+    // Can be extended to trigger re-render if needed
+  }
 }

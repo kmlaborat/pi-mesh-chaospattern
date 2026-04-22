@@ -11,7 +11,7 @@ import { Type } from "@sinclair/typebox";
 import { isAbsolute, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import type { MeshState, Dirs, MeshMessage, MeshConfig, MeshLifecycleHooks, CreateHooksFn } from "./types.js";
-import { STATUS_INDICATORS, REGISTRY_FLUSH_MS } from "./types.js";
+import { STATUS_INDICATORS, REGISTRY_FLUSH_MS, isValidCognitiveState } from "./types.js";
 import { loadConfig, matchesAutoRegisterPath } from "./config.js";
 import * as registry from "./registry.js";
 import * as reservations from "./reservations.js";
@@ -43,8 +43,9 @@ export default function piMeshExtension(pi: ExtensionAPI) {
     gitBranch: undefined,
     isHuman: false,
     session: { toolCalls: 0, tokens: 0, filesModified: [] },
-    activity: { lastActivityAt: new Date().toISOString() },
+    activity: { lastActivityAt: new Date().toISOString(), cognitiveState: "idle" },
     statusMessage: undefined,
+    cognitiveState: "idle",
     customStatus: false,
     registryFlushTimer: null,
     sessionStartedAt: new Date().toISOString(),
@@ -280,6 +281,7 @@ export default function piMeshExtension(pi: ExtensionAPI) {
         }
 
         if (a.statusMessage) linesAgent.push(`  • Status message: ${a.statusMessage}`);
+        if (a.cognitiveState) linesAgent.push(`  • Cognitive State: ${a.cognitiveState}`);
 
         lines.push(linesAgent.join("\n"));
       }
@@ -495,7 +497,7 @@ export default function piMeshExtension(pi: ExtensionAPI) {
     description: [
       "Utility actions for mesh management.",
       "Actions: whois (agent details), rename (change your name),",
-      "set_status (custom status message), feed (activity feed).",
+      "set_status (custom status message), set_cognitive_state (declare intent), feed (activity feed).",
     ].join(" "),
     parameters: Type.Object({
       action: Type.String({
@@ -517,16 +519,22 @@ export default function piMeshExtension(pi: ExtensionAPI) {
           description: "Number of events (for feed, default 20)",
         })
       ),
+      cognitiveState: Type.Optional(
+        Type.String({
+          description: "Cognitive state to set (for set_cognitive_state)",
+        })
+      ),
     }),
 
     async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
       if (!state.registered) return notRegistered();
 
-      const { action, name, message, limit } = params as {
+      const { action, name, message, limit, cognitiveState } = params as {
         action: string;
         name?: string;
         message?: string;
         limit?: number;
+        cognitiveState?: string;
       };
 
       switch (action) {
@@ -536,11 +544,13 @@ export default function piMeshExtension(pi: ExtensionAPI) {
           return executeRename(name, ctx);
         case "set_status":
           return executeSetStatus(message, ctx);
+        case "set_cognitive_state":
+          return executeSetCognitiveState(cognitiveState, ctx);
         case "feed":
           return executeFeed(limit);
         default:
           return result(
-            `Unknown action "${action}". Use: whois, rename, set_status, feed.`
+            `Unknown action "${action}". Use: whois, rename, set_status, set_cognitive_state, feed.`
           );
       }
     },
@@ -580,6 +590,7 @@ export default function piMeshExtension(pi: ExtensionAPI) {
       `Session: ${sessionAge} - ${agent.session?.toolCalls ?? 0} tool calls - ${tokenStr} tokens`
     );
     if (agent.statusMessage) lines.push(`Status: ${agent.statusMessage}`);
+    if (agent.cognitiveState) lines.push(`Cognitive State: ${agent.cognitiveState}`);
 
     if (agent.reservations && agent.reservations.length > 0) {
       lines.push("", "## Reservations");
@@ -632,6 +643,27 @@ export default function piMeshExtension(pi: ExtensionAPI) {
     state.customStatus = true;
     registry.updateRegistration(state, dirs, ctx);
     return result(`Status set to: ${state.statusMessage}`);
+  }
+
+  function executeSetCognitiveState(
+    cognitiveState: string | undefined,
+    ctx: ExtensionContext
+  ) {
+    if (!cognitiveState || cognitiveState.trim() === "") {
+      state.cognitiveState = undefined;
+      registry.updateRegistration(state, dirs, ctx);
+      return result("Cognitive state cleared.");
+    }
+
+    const trimmed = cognitiveState.trim();
+    if (!isValidCognitiveState(trimmed)) {
+      return result(`Invalid cognitive state: "${trimmed}". Use: discussing, agreed, objecting, waiting_consensus, finalizing, implementing, reviewing, idle, blocked.`);
+    }
+
+    state.cognitiveState = trimmed as import("./types.js").CognitiveState;
+    state.activity.cognitiveState = state.cognitiveState;
+    registry.updateRegistration(state, dirs, ctx);
+    return result(`Cognitive state set to: ${state.cognitiveState}`);
   }
 
   function executeFeed(limit?: number) {
@@ -940,7 +972,7 @@ export default function piMeshExtension(pi: ExtensionAPI) {
 // =============================================================================
 
 function result(text: string) {
-  return { content: [{ type: "text" as const, text }] };
+  return { content: [{ type: "text" as const, text }], details: undefined };
 }
 
 function notRegistered() {
