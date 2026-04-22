@@ -2,10 +2,10 @@ node_modules/
 dist/
 *.tgz
 .pi/mesh/
+.pi/superpowers-state.json
 .DS_Store
 *.log
 coverage/
 docs/plans/
 docs/verification-report.md
 docs/spec/
-.pi/

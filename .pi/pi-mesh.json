@@ -1,0 +1,9 @@
+{
+  "autoRegister": true,
+  "autoRegisterPaths": ["."],
+  "contextMode": "full",
+  "feedRetention": 100,
+  "stuckThreshold": 300,
+  "autoStatus": true,
+  "chaosMode": "off"
+}

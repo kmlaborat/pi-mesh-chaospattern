@@ -41,6 +41,6 @@
   ],
   "devDependencies": {
     "bun-types": "^1.3.10",
-    "typescript": "^6.0.3"  // Required for type checking in chaos pattern - enables independent evolution from upstream
+    "typescript": "^6.0.3"
   }
 }
