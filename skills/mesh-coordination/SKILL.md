@@ -45,27 +45,114 @@ metadata:
 **Critical**: Builder and Validator must **explicitly coordinate** for both Phase 1 (Plan Approval) and Phase 2 (Code Review). No assumptions, no silent reviews.
 
 ## Must-Follow Rules
-1. **Builder-Validator Chain (Two-Phase Collaboration)**:
+1. **Consensus Pattern (Universal Agreement Process)**:
+   
+   **Applicable Scenarios**:
+   - Finalizing discussion conclusions
+   - Deciding coding standards and conventions
+   - Architecture and design decisions
+   - Refactoring plan approval
+   - Implementation approach agreements
+   - Any decision requiring multi-agent collaboration
+   
+   **Process**:
+   
+   **Step 1: Proposal Broadcast**:
+   - Proposer MUST use `mesh_send` with **broadcast** (no specific `to` parameter):
+     ```
+     📢 [Consensus Request]
+     Subject: [Decision Title]
+     
+     Proposal:
+     [Detailed proposal content]
+     
+     Rationale:
+     [Why this approach is optimal]
+     
+     All agents, can you agree to this proposal?
+     Reply with "@proposer-name Agree" if you agree.
+     Reply with "@proposer-name Oppose: [reason]" if you oppose.
+     Reply with "@proposer-name Modify: [alternative]" if you suggest modifications.
+     
+     Response deadline: 30 seconds
+     ```
+   
+   **Step 2: Response Phase**:
+   - Each agent MUST reply **exactly once** (no repeated responses)
+   - Response types:
+     - ✅ **Agree**: "@proposer-name Agree"
+     - ❌ **Oppose**: "@proposer-name Oppose: [specific reason]"
+     - 🔧 **Modify**: "@proposer-name Modify: [alternative or amendment]"
+     - ⏳ **Hold**: "@proposer-name Hold: [additional info needed]"
+   
+   **Step 3: Tally and Decision**:
+   - **Unanimous Agree**: All agents reply "Agree" → Proposer broadcasts "🎉 Consensus reached. Proceeding with this approach."
+   - **Modifications Proposed**: Proposer integrates amendments and re-requests consensus (max 2 rounds)
+   - **Opposition**: Return to discussion phase, or decide by majority vote
+   - **Hold Responses**: Provide additional info, then re-request consensus
+   - **No Response**: Send reminder after 30 seconds (max 1 reminder), then mark as "Consensus Failed" if still no response
+   
+   **Step 4: Final Declaration**:
+   - Consensus reached: "🎉 [Subject] consensus completed. Proceeding with this approach."
+   - Consensus failed: "⚠️ [Subject] consensus not reached. Exploring alternatives."
+   
+   **Critical Rules**:
+   - ✅ **Broadcast Required**: Consensus requests MUST be broadcast (no individual `to` parameter)
+   - ✅ **No Individual Mentions**: Do NOT use individual `@name` checks for consensus
+   - ✅ **One Response Only**: Each agent responds exactly once (no re-confirmation)
+   - ✅ **Transparency**: All responses visible to all agents
+   - ❌ **No Re-confirmation**: Do NOT ask agents who already agreed to confirm again
+   - ❌ **No Unilateral Decision**: Do NOT decide without waiting for all responses
+   - ❌ **No Individual Follow-ups**: Do NOT DM agents individually during consensus
+   
+2. **Builder-Validator Chain (Two-Phase Collaboration)**:
    
    **Phase 1: Plan Approval (Before Implementation)**
    - BEFORE starting implementation, Builder MUST:
-     1. Announce intent via `mesh_send`: "I will implement [feature] by doing [plan]."
-     2. Request a Validator: "@agent-name Can you review this plan as Validator?"
-     3. **Wait for explicit approval** before reserving files or implementing.
-     - ❌ Forbidden: Start implementation without Validator approval.
-     - ❌ Forbidden: Assume someone will review later without confirming.
-     - ✅ Required: Get approval → Reserve files → Implement.
+     1. Announce intent and proposal via `mesh_send` (broadcast):
+        ```
+        📢 [Consensus Request]
+        Subject: Implementation Plan for [feature]
+        
+        Proposal:
+        [Detailed implementation plan]
+        
+        Rationale:
+        [Why this approach]
+        
+        All agents, can you agree to this plan?
+        Reply with "@builder-name Agree" if you agree.
+        ```
+     2. **Use Consensus Pattern** to gather approval from all agents.
+     3. **Wait for consensus** before reserving files or implementing.
+     - ❌ Forbidden: Start implementation without consensus approval.
+     - ❌ Forbidden: Use individual @name checks for plan approval.
+     - ✅ Required: Get consensus → Reserve files → Implement.
    
    **Phase 2: Code Review (After Implementation)**
    - AFTER implementation complete, Builder MUST:
-     1. Report completion with git SHA: "Implementation complete. Ready for review. @agent-name"
-     2. Wait for Validator to review and approve.
+     1. Report completion with git SHA: "Implementation complete. Ready for review."
+     2. Wait for Validator to review and provide feedback.
    - Validator MUST:
      1. Review code using `read` tool.
      2. Provide structured feedback via `mesh_send`.
-     3. Approve or request fixes before merge.
-   - ❌ Forbidden: Merge without Validator approval.
-   - ✅ Required: Review → Feedback → Fix (if needed) → Approve → Merge.
+     3. If issues found, request fixes.
+   - **Phase 3: Final Consensus**:
+     - After all fixes complete, **use Consensus Pattern** for final approval:
+       ```
+       📢 [Consensus Request]
+       Subject: Final Approval for [feature]
+       
+       Implementation Summary:
+       [What was implemented]
+       Git SHA: [commit hash]
+       
+       All agents, can you approve this implementation?
+       Reply with "@builder-name Agree" if approved.
+       ```
+     - **Wait for unanimous consensus** before merging.
+   - ❌ Forbidden: Merge without consensus approval.
+   - ✅ Required: Review → Feedback → Fix (if needed) → Consensus → Merge.
 
 2. **Reply requirement**: When you receive a message, **always reply** before starting any work.
    - Messages are delivered to your inbox (`.pi/mesh/inbox/<your-name>/`)
@@ -82,8 +169,9 @@ metadata:
    - `feed` shows activity summaries only (truncated previews)
    - Full message content is in your inbox JSON files
    - Chat history in the UI shows complete message threads
-5. **Mentions**: Use `@name` when addressing a specific agent.
+5. **Mentions**: Use `@name` when addressing a specific agent (except for consensus broadcasts).
 6. **Progress updates**: Share progress via `mesh_send` at key milestones.
+7. **Consensus Broadcast Rule**: When requesting consensus, **ALWAYS use broadcast** (no `to` parameter). Individual @name mentions are for responses only, not for the initial request.
 7. **Role switching**: Announce role changes via `mesh_send` before acting.
 8. **Code review**: After implementation, another agent must review code before merge.
    - Implementer reports completion with git SHA
@@ -152,24 +240,50 @@ If work is interrupted, cancelled, or fails mid-task:
 3. **Document the interruption** reason for future reference
 4. **If resuming later**: Start from Plan Sharing step (rule 1)
 
-## Workflow (Builder-Validator Chain)
+## Workflow (Builder-Validator Chain with Consensus Pattern)
 
-### Phase 1: Plan Approval
-1. **Announce Plan**: Builder presents plan via `mesh_send` to potential Validator.
-2. **Request Validator**: "@agent-name Can you review this plan as Validator?"
-3. **Get Approval**: Wait for explicit approval from Validator.
+### Phase 1: Plan Approval (Using Consensus Pattern)
+1. **Broadcast Proposal**: Builder presents plan via `mesh_send` broadcast:
+   ```
+   📢 [Consensus Request]
+   Subject: Implementation Plan for [feature]
+   [Proposal details]
+   All agents, can you agree?
+   ```
+2. **Collect Responses**: Wait for all agents to reply with Agree/Oppose/Modify/Hold.
+3. **Reach Consensus**: Once all agents agree, proceed.
 4. **Check Reservations**: Use `mesh_peers` to check current reservations.
 5. **Reserve Files**: Reserve specific files/directories with `mesh_reserve` BEFORE editing.
 
 ### Phase 2: Implementation
 6. **Implement**: Start work (as Builder) with reservations active.
 7. **Release Reservations**: Release ALL reservations immediately after editing complete.
-8. **Completion Report**: Implementer reports completion with git SHA: "Implementation complete. Ready for review. @agent-name"
+8. **Completion Report**: Implementer reports completion with git SHA:
+   ```
+   Implementation complete. Ready for final review.
+   Git SHA: [commit-hash]
+   ```
 
 ### Phase 3: Code Review
-9. **Peer Review**: Validator reviews code using `read` tool → Provides feedback.
+9. **Peer Review**: Validator(s) review code using `read` tool → Provide feedback.
 10. **Fixes** (if needed): Implementer fixes issues - repeat reserve/edit/release cycle.
-11. **Approval**: Reviewer approves → Merge allowed.
+11. **Ready for Consensus**: When all issues resolved, proceed to final consensus.
+
+### Phase 4: Final Consensus (Using Consensus Pattern)
+12. **Broadcast Final Approval Request**:
+    ```
+    📢 [Consensus Request]
+    Subject: Final Approval for [feature]
+    Implementation Summary: [what was done]
+    Git SHA: [commit-hash]
+    All agents, can you approve?
+    ```
+13. **Collect Final Responses**: Wait for all agents to reply.
+14. **Consensus Complete**: Once unanimous agreement, broadcast:
+    ```
+    🎉 Consensus reached for [feature]. Proceeding with merge.
+    ```
+15. **Merge**: Merge code after consensus approval.
 
 Refer to `references/workflows.md` for detailed workflows.
 
