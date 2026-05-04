@@ -282,6 +282,7 @@ export default function piMeshExtension(pi: ExtensionAPI) {
 
         if (a.statusMessage) linesAgent.push(`  • Status message: ${a.statusMessage}`);
         if (a.cognitiveState) linesAgent.push(`  • Cognitive State: ${a.cognitiveState}`);
+        if (a.role) linesAgent.push(`  • Role: ${a.role}`);
 
         lines.push(linesAgent.join("\n"));
       }
