@@ -216,6 +216,7 @@ export function register(
     session: { ...state.session },
     activity: { lastActivityAt: now, cognitiveState: "idle" },
     cognitiveState: "idle",
+    role: state.role,
   };
 
   try {
@@ -369,6 +370,7 @@ export function updateRegistration(
     reg.activity = { ...state.activity };
     reg.statusMessage = state.statusMessage;
     reg.cognitiveState = state.cognitiveState;
+    reg.role = state.role;
     fs.writeFileSync(regPath, JSON.stringify(reg, null, 2));
   } catch {
     // Ignore
@@ -395,6 +397,7 @@ export function flushActivityToRegistry(
     reg.activity = { ...state.activity };
     reg.statusMessage = state.statusMessage;
     reg.cognitiveState = state.cognitiveState;
+    reg.role = state.role;
     fs.writeFileSync(regPath, JSON.stringify(reg, null, 2));
   } catch {
     // Ignore
