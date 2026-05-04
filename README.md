@@ -189,6 +189,23 @@ Override with `PI_AGENT_NAME` env var, or rename at runtime:
 mesh_manage({ action: "rename", name: "auth-worker" })
 ```
 
+## Fixed Roles
+
+Assign roles to agents for efficient collaboration. Roles are fixed for the session and broadcast to all agents when changed:
+
+```typescript
+// Set as Builder (code implementation)
+mesh_manage({ action: 'set_role', role: 'builder' })
+
+// Set as Validator (code review)
+mesh_manage({ action: 'set_role', role: 'validator' })
+
+// Clear role
+mesh_manage({ action: 'set_role', role: 'null' })
+```
+
+Roles appear in `mesh_peers` output, so all agents can see who is responsible for what.
+
 ## Lifecycle Hooks
 
 pi-mesh supports lifecycle hooks for reacting to mesh events without forking the package. Specify a module path in your config:
