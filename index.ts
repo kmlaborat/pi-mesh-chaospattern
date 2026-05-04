@@ -699,14 +699,10 @@ export default function piMeshExtension(pi: ExtensionAPI) {
     registry.updateRegistration(state, dirs, ctx);
 
     // Broadcast to all agents
-    if (newRole !== null) {
-      messaging.broadcastMessage(
-        state,
-        dirs,
-        `Role change: ${state.agentName} is now ${newRole}`,
-        false
-      );
-    }
+    const roleMessage = newRole !== null
+      ? `Role change: ${state.agentName} is now ${newRole}`
+      : `Role change: ${state.agentName} cleared role`;
+    messaging.broadcastMessage(state, dirs, roleMessage, false);
 
     // Log to feed
     feed.logEvent(

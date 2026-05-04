@@ -56,21 +56,6 @@ describe("set_role", () => {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 
-  it("accepts builder role", () => {
-    const validRoles: AgentRole[] = ['builder', 'validator', null];
-    expect(validRoles.includes('builder')).toBe(true);
-  });
-
-  it("accepts validator role", () => {
-    const validRoles: AgentRole[] = ['builder', 'validator', null];
-    expect(validRoles.includes('validator')).toBe(true);
-  });
-
-  it("rejects invalid role", () => {
-    const validRoles: AgentRole[] = ['builder', 'validator', null];
-    expect(validRoles.includes('coordinator' as any)).toBe(false);
-  });
-
   it("persists role in registration on register", () => {
     const dirs = resolveDirs(tmpDir);
     const state = makeState();
