@@ -502,7 +502,7 @@ export default function piMeshExtension(pi: ExtensionAPI) {
     parameters: Type.Object({
       action: Type.String({
         description:
-          "Action: 'whois', 'rename', 'set_status', 'feed'",
+          "Action: 'whois', 'rename', 'set_status', 'set_role', 'set_cognitive_state', 'feed'",
       }),
       name: Type.Optional(
         Type.String({
@@ -524,17 +524,23 @@ export default function piMeshExtension(pi: ExtensionAPI) {
           description: "Cognitive state to set (for set_cognitive_state)",
         })
       ),
+      role: Type.Optional(
+        Type.String({
+          description: "Role to set (for set_role): 'builder' or 'validator'. Use 'null' to clear.",
+        })
+      ),
     }),
 
     async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
       if (!state.registered) return notRegistered();
 
-      const { action, name, message, limit, cognitiveState } = params as {
+      const { action, name, message, limit, cognitiveState, role } = params as {
         action: string;
         name?: string;
         message?: string;
         limit?: number;
         cognitiveState?: string;
+        role?: string;
       };
 
       switch (action) {
@@ -544,13 +550,15 @@ export default function piMeshExtension(pi: ExtensionAPI) {
           return executeRename(name, ctx);
         case "set_status":
           return executeSetStatus(message, ctx);
+        case "set_role":
+          return executeSetRole(role, ctx);
         case "set_cognitive_state":
           return executeSetCognitiveState(cognitiveState, ctx);
         case "feed":
           return executeFeed(limit);
         default:
           return result(
-            `Unknown action "${action}". Use: whois, rename, set_status, set_cognitive_state, feed.`
+            `Unknown action "${action}". Use: whois, rename, set_status, set_role, set_cognitive_state, feed.`
           );
       }
     },
@@ -664,6 +672,54 @@ export default function piMeshExtension(pi: ExtensionAPI) {
     state.activity.cognitiveState = state.cognitiveState;
     registry.updateRegistration(state, dirs, ctx);
     return result(`Cognitive state set to: ${state.cognitiveState}`);
+  }
+
+  function executeSetRole(
+    role: string | undefined,
+    ctx: ExtensionContext
+  ) {
+    // Validate role
+    if (role !== undefined && role !== 'null' && role !== 'builder' && role !== 'validator') {
+      return result(`Invalid role: "${role}". Use: 'builder', 'validator', or 'null' to clear.`);
+    }
+
+    const newRole = (role === 'null' || role === undefined) ? null : role as import("./types.js").AgentRole;
+
+    // Check if already set to the same role
+    if (state.role === newRole) {
+      if (newRole === null) {
+        return result("Role is already cleared.");
+      }
+      return result(`Already set as ${newRole}.`);
+    }
+
+    // Update state
+    state.role = newRole;
+    registry.updateRegistration(state, dirs, ctx);
+
+    // Broadcast to all agents
+    if (newRole !== null) {
+      messaging.broadcastMessage(
+        state,
+        dirs,
+        `Role change: ${state.agentName} is now ${newRole}`,
+        false
+      );
+    }
+
+    // Log to feed
+    feed.logEvent(
+      dirs,
+      state.agentName,
+      'message',
+      'all',
+      `set role to ${newRole ?? 'null'}`
+    );
+
+    if (newRole === null) {
+      return result("Role cleared.");
+    }
+    return result(`Role set to: ${newRole}. Broadcast sent to all agents.`);
   }
 
   function executeFeed(limit?: number) {
