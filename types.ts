@@ -62,6 +62,7 @@ export interface AgentRegistration {
   activity: AgentActivity;
   statusMessage?: string;
   cognitiveState?: CognitiveState;
+  role?: AgentRole;  // ユーザーによる明示的な役割宣言
 }
 
 // =============================================================================
@@ -111,6 +112,12 @@ export interface FeedEvent {
  * System status - computed from activity and reservations.
  */
 export type AgentStatus = "active" | "idle" | "away" | "stuck";
+
+/**
+ * Agent role - explicitly set by user, fixed for the session.
+ * null = not set (user has not assigned a role yet).
+ */
+export type AgentRole = 'builder' | 'validator' | null;
 
 /**
  * Cognitive state - explicit agent self-identification of current intent/focus.
@@ -185,6 +192,7 @@ export interface MeshState {
   activity: AgentActivity;
   statusMessage?: string;
   cognitiveState?: CognitiveState;
+  role?: AgentRole;  // ユーザーによる明示的な役割宣言
   customStatus: boolean;
   registryFlushTimer: ReturnType<typeof setTimeout> | null;
   sessionStartedAt: string;
